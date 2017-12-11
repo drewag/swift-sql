@@ -37,13 +37,16 @@ public enum Parameter: QueryComponent, ParameterConvertible {
         case .field:
             return []
         case .value(let value):
-            return [value ?? .null]
+            guard let value = value else {
+                return []
+            }
+            return [value]
         case .values(let values):
-            return values.map({$0 ?? .null})
+            return values.flatMap({$0})
         case .function(let function):
             return function.arguments
         case .null:
-            return [.null]
+            return []
         }
     }
 

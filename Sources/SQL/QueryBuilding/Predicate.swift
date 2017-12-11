@@ -11,6 +11,8 @@ public indirect enum Predicate: QueryComponent {
     case and([Predicate])
     case or([Predicate])
     case not(Predicate)
+    case isNull(Parameter)
+    case isNotNull(Parameter)
 
     public var sql: String {
         switch self {
@@ -22,6 +24,10 @@ public indirect enum Predicate: QueryComponent {
             return "(" + predicates.map({$0.sql}).joined(separator: " OR ")  + ")"
         case .not(let predicate):
             return "NOT \(predicate.sql)"
+        case .isNull(let param):
+            return "\(param.sql) IS NULL"
+        case .isNotNull(let param):
+            return "\(param.sql) IS NOT NULL"
         }
     }
 
@@ -35,6 +41,10 @@ public indirect enum Predicate: QueryComponent {
             return predicates.flatMap({$0.arguments})
         case .not(let predicate):
             return predicate.arguments
+        case .isNull(let param):
+            return param.arguments
+        case .isNotNull(let param):
+            return param.arguments
         }
     }
 }
@@ -106,12 +116,12 @@ extension ParameterConvertible {
 // MARK: Is Null
 
 extension ParameterConvertible {
-    public func isNull() -> Predicate {
-        return .expression(left: self.sqlParameter, operator: .equal, right: .null)
+    public var isNull: Predicate {
+        return .isNull(self.sqlParameter)
     }
 
-    public func isNotNulll() -> Predicate {
-        return .not(isNull())
+    public var isNotNull: Predicate {
+        return .isNotNull(self.sqlParameter)
     }
 }
 
