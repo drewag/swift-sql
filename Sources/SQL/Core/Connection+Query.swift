@@ -5,8 +5,6 @@
 //  Created by Andrew J Wagner on 12/5/17.
 //
 
-import CPostgreSQL
-
 extension Connection {
     public func executeIgnoringResult(_ query: AnyQuery) throws {
         try self.run(statement: query.statement, arguments: query.arguments)
