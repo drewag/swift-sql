@@ -9,6 +9,7 @@ import Foundation
 
 public enum Function: QueryComponent {
     case sum(QueryComponent)
+    case count(QueryComponent)
     case boundedPseudoEncrypt24(value: QueryComponent, max: Int)
     case generateUUIDv4
     case custom(name: String, params: [QueryComponent])
@@ -24,6 +25,9 @@ public enum Function: QueryComponent {
         case .sum(let summing):
             name = "sum"
             params = [summing.sql]
+        case .count(let counting):
+            name = "count"
+            params = [counting.sql]
         case .boundedPseudoEncrypt24(let value, _):
             name = "bounded_pseudo_encrypt"
             params = [value.sql, "%@"]
@@ -42,6 +46,8 @@ public enum Function: QueryComponent {
         switch self {
         case .sum(let sum):
             return sum.arguments
+        case .count(let count):
+            return count.arguments
         case .boundedPseudoEncrypt24(let value, let max):
             return value.arguments + [.raw("\(max)")]
         case .generateUUIDv4:

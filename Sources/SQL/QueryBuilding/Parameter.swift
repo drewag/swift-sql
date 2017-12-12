@@ -75,6 +75,10 @@ public indirect enum Selectable<T: TableStorable>: QueryComponent {
         return .function(.sum(sum))
     }
 
+    public static func count(_ count: Selectable<T>) -> Selectable<T> {
+        return .function(.count(count))
+    }
+
     public var sql: String {
         switch self {
         case let .my(field):

@@ -14,6 +14,10 @@ extension TableStorable {
         return SelectQuery(selections: selections)
     }
 
+    public static func selectCount() -> SelectCountQuery<Self> {
+        return SelectCountQuery(selections: [Selectable<Self>.count(.all)])
+    }
+
     public static func update(_ updates: [(Fields,ParameterConvertible?)]) -> UpdateTableQuery<Self> {
         var setters = [QualifiedField:ParameterConvertible?]()
         for (field, param) in updates {

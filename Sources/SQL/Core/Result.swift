@@ -31,6 +31,15 @@ extension Result where Query: ChangeQuery {
     }
 }
 
+extension Result where Query: CountReturningQuery {
+    public func count(called: String = "count") throws -> Int {
+        guard let row: Row<Query> = self.dataProvider.rows().first else {
+            return 0
+        }
+        return try row.get(column: called)
+    }
+}
+
 open class RowSequence<Query: RowReturningQuery>: Collection {
     public init() {}
 

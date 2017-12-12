@@ -61,7 +61,7 @@ public struct Constraint: CustomStringConvertible {
     }
 }
 
-public struct FieldSpec: CustomStringConvertible {
+public struct FieldSpec: QueryComponent {
     let name: String
     let allowNull: Bool
     let isUnique: Bool
@@ -92,7 +92,7 @@ public struct FieldSpec: CustomStringConvertible {
         self.references = nil
     }
 
-    public var description: String {
+    public var sql: String {
         var description = "\(self.name) \(self.type.sql)"
         if isPrimaryKey {
             description += " PRIMARY KEY"
@@ -104,13 +104,17 @@ public struct FieldSpec: CustomStringConvertible {
             description += " NOT NULL"
         }
         if let defaultValue = self.defaultValue {
-            description += " DEFAULT \(defaultValue.sql)"
+            description += " DEFAULT \(try! defaultValue.rendered())"
         }
         if let references = self.references {
             description += " REFERENCES \(references.table)(\(references.field))"
             description += " ON DELETE \(references.onDelete.rawValue) ON UPDATE \(references.onUpdate.rawValue)"
         }
         return description
+    }
+
+    public var arguments: [Value] {
+        return []
     }
 }
 
@@ -165,14 +169,15 @@ public struct CreateTable: DatabaseChange {
 
     public var forwardQueries: [AnyQuery] {
         var query = "CREATE TABLE \(name) ("
-        var specs = self.fields.map({$0.description})
+        var specs = self.fields.map({$0.sql})
+        let arguments = self.fields.flatMap({$0.arguments})
         if !self.primaryKey.isEmpty {
             specs.append("PRIMARY KEY (\(self.primaryKey.joined(separator: ",")))")
         }
         specs += self.constraints.map({$0.description})
         query += specs.joined(separator: ",")
         query += ")"
-        return [RawEmptyQuery(sql: query)]
+        return [RawEmptyQuery(sql: query, arguments: arguments)]
     }
 
     public var revertQueries: [AnyQuery]? {
@@ -190,7 +195,7 @@ public struct AddColumn: DatabaseChange {
     }
 
     public var forwardQueries: [AnyQuery] {
-        return [RawEmptyQuery(sql: "ALTER TABLE \(table) ADD COLUMN \(spec.description)")]
+        return [RawEmptyQuery(sql: "ALTER TABLE \(table) ADD COLUMN \(spec.sql)", arguments: spec.arguments)]
     }
 
     public var revertQueries: [AnyQuery]? {

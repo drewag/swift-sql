@@ -37,3 +37,27 @@ public struct SelectQuery<T: TableStorable>: RowReturningQuery, FilterableQuery,
         return self.joins.flatMap({$0.arguments}) + (predicate?.arguments ?? [])
     }
 }
+
+public struct SelectCountQuery<T: TableStorable>: CountReturningQuery, FilterableQuery, TableConstrainedQuery {
+    public typealias Table = T
+
+    var selections: [SQLConvertible] = []
+    public var predicate: Predicate?
+
+    init(selections: [SQLConvertible]) {
+        self.selections = selections
+    }
+
+    public var statement: String {
+        var sql = "SELECT \(selections.map({$0.sql}).joined(separator: ", ")) FROM \(T.tableName)"
+
+        if let predicate = predicate {
+            sql += " WHERE \(predicate.sql)"
+        }
+        return sql
+    }
+
+    public var arguments: [Value] {
+        return predicate?.arguments ?? []
+    }
+}
