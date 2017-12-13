@@ -49,7 +49,7 @@ public enum Function: QueryComponent {
         case .count(let count):
             return count.arguments
         case .boundedPseudoEncrypt24(let value, let max):
-            return value.arguments + [.raw("\(max)")]
+            return value.arguments + [.int(max)]
         case .generateUUIDv4:
             return []
         case .custom(_, let params):

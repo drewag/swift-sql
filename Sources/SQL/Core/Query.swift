@@ -62,12 +62,34 @@ extension QueryComponent {
                     output += "NULL"
                 case .bool(let bool):
                     output += (bool ? "true" : "false")
-                case .raw(let raw):
-                    output += raw
                 case .string(let string):
                     output += "'\(string)'"
                 case .data:
                     throw SQLError(message: "cannot render SQL with data value")
+                case .float(let value):
+                    output += "\(value)"
+                case .double(let value):
+                    output += "\(value)"
+                case .int(let value):
+                    output += "\(value)"
+                case .int8(let value):
+                    output += "\(value)"
+                case .int16(let value):
+                    output += "\(value)"
+                case .int32(let value):
+                    output += "\(value)"
+                case .int64(let value):
+                    output += "\(value)"
+                case .uint(let value):
+                    output += "\(value)"
+                case .uint8(let value):
+                    output += "\(value)"
+                case .uint16(let value):
+                    output += "\(value)"
+                case .uint32(let value):
+                    output += "\(value)"
+                case .uint64(let value):
+                    output += "\(value)"
                 }
                 varCount += 1
             }

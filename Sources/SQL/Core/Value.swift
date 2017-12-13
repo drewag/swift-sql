@@ -9,7 +9,22 @@ import Foundation
 
 public enum Value: QueryComponent {
     case string(String)
-    case raw(String)
+
+    case float(Float)
+    case double(Double)
+
+    case int(Int)
+    case int8(Int8)
+    case int16(Int16)
+    case int32(Int32)
+    case int64(Int64)
+
+    case uint(UInt)
+    case uint8(UInt8)
+    case uint16(UInt16)
+    case uint32(UInt32)
+    case uint64(UInt64)
+
     case data(Data)
     case bool(Bool)
     case null
@@ -25,14 +40,6 @@ public enum Value: QueryComponent {
 
 public protocol ValueConvertible: ParameterConvertible {
     var sqlValue: Value {get}
-}
-
-public protocol RawValueConvertible: ValueConvertible {}
-
-extension RawValueConvertible {
-    public var sqlValue: Value {
-        return .raw("\(self)")
-    }
 }
 
 extension ValueConvertible {
@@ -65,16 +72,74 @@ extension Data: ValueConvertible {
     }
 }
 
-extension Int: RawValueConvertible {}
-extension Double: RawValueConvertible {}
-extension Float: RawValueConvertible {}
-extension Int8: RawValueConvertible {}
-extension Int16: RawValueConvertible {}
-extension Int32: RawValueConvertible {}
-extension Int64: RawValueConvertible {}
-extension UInt: RawValueConvertible {}
-extension UInt8: RawValueConvertible {}
-extension UInt16: RawValueConvertible {}
-extension UInt32: RawValueConvertible {}
-extension UInt64: RawValueConvertible {}
+extension Int: ValueConvertible {
+    public var sqlValue: Value {
+        return .int(self)
+    }
+}
 
+extension Double: ValueConvertible {
+    public var sqlValue: Value {
+        return .double(self)
+    }
+}
+
+extension Float: ValueConvertible {
+    public var sqlValue: Value {
+        return .float(self)
+    }
+}
+
+extension Int8: ValueConvertible {
+    public var sqlValue: Value {
+        return .int8(self)
+    }
+}
+
+extension Int16: ValueConvertible {
+    public var sqlValue: Value {
+        return .int16(self)
+    }
+}
+
+extension Int32: ValueConvertible {
+    public var sqlValue: Value {
+        return .int32(self)
+    }
+}
+
+extension Int64: ValueConvertible {
+    public var sqlValue: Value {
+        return .int64(self)
+    }
+}
+
+extension UInt: ValueConvertible {
+    public var sqlValue: Value {
+        return .uint(self)
+    }
+}
+
+extension UInt8: ValueConvertible {
+    public var sqlValue: Value {
+        return .uint8(self)
+    }
+}
+
+extension UInt16: ValueConvertible {
+    public var sqlValue: Value {
+        return .uint16(self)
+    }
+}
+
+extension UInt32: ValueConvertible {
+    public var sqlValue: Value {
+        return .uint32(self)
+    }
+}
+
+extension UInt64: ValueConvertible {
+    public var sqlValue: Value {
+        return .uint64(self)
+    }
+}

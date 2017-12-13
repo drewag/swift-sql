@@ -14,7 +14,7 @@ public protocol RowRetrievable {
 open class Row<Query: RowReturningQuery> {
     public init() {}
 
-    open subscript(string: String) -> Data? {
+    open func data(forColumnNamed name: String) throws -> Data? {
         fatalError("Must override")
     }
 
@@ -35,7 +35,7 @@ extension Row where Query: TableConstrainedQuery {
 
     public func getIfExists<R: RowRetrievable>(_ field: Query.Table.Fields) throws -> R? {
         for key in Query.Table.field(field).possibleKeys {
-            if let value = self[key] {
+            if let value = try self.data(forColumnNamed: key) {
                 return try R(sqlResult: value)
             }
         }
@@ -54,7 +54,7 @@ extension Row {
     }
 
     public func getIfExists<R: RowRetrievable>(column: String) throws -> R? {
-        if let value = self[column] {
+        if let value = try self.data(forColumnNamed: column) {
             return try R(sqlResult: value)
         }
         return nil

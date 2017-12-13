@@ -33,42 +33,18 @@ extension Result where Query: ChangeQuery {
 
 extension Result where Query: CountReturningQuery {
     public func count(called: String = "count") throws -> Int {
-        guard let row: Row<Query> = self.dataProvider.rows().first else {
+        guard let row: Row<Query> = self.dataProvider.rows().next() else {
             return 0
         }
         return try row.get(column: called)
     }
 }
 
-open class RowSequence<Query: RowReturningQuery>: Collection {
+open class RowSequence<Query: RowReturningQuery>: Sequence, IteratorProtocol {
     public init() {}
 
-    var currentRow: Int = -1
-
-    open var count: Int {
+    open func next() -> Row<Query>? {
         fatalError("Must override")
-    }
-
-    open subscript(i: Int) -> Row<Query> {
-        fatalError("Must override")
-    }
-
-    public func next() -> Row<Query>? {
-        guard self.currentRow + 1 < self.count else {
-            return nil
-        }
-        self.currentRow += 1
-        return self[self.currentRow]
-    }
-
-    public let startIndex: Int = 0
-
-    public var endIndex: Int {
-        return self.count
-    }
-
-    public func index(after i: Int) -> Int {
-        return i + 1
     }
 }
 

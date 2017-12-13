@@ -13,7 +13,7 @@ public struct SQLError: Error, CustomStringConvertible {
         return self.message
     }
 
-    init(message: String, moreInformation: String? = nil) {
+    public init(message: String, moreInformation: String? = nil) {
         self.message = message
         self.moreInformation = moreInformation
     }
