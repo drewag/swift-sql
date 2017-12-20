@@ -25,25 +25,33 @@ open class Row<Query: RowReturningQuery> {
 
 extension Row where Query: TableConstrainedQuery {
     public func get<R: RowRetrievable>(_ field: Query.Table.Fields) throws -> R {
+        return try self.get(Query.Table.field(field))
+    }
+
+    public func getIfExists<R: RowRetrievable>(_ field: Query.Table.Fields) throws -> R? {
+        return try self.get(Query.Table.field(field))
+    }
+}
+
+extension Row {
+    public func get<R: RowRetrievable>(_ field: QualifiedField) throws -> R {
         guard let value: R = try self.getIfExists(field) else {
             throw SQLError(
-                message: "A value for '\(Query.Table.field(field).sql)' does not exist",
+                message: "A value for '\(field.sql)' does not exist",
                 moreInformation: "This result has the following columns: '\(self.columns.joined(separator: "', '"))'")
         }
         return value
     }
 
-    public func getIfExists<R: RowRetrievable>(_ field: Query.Table.Fields) throws -> R? {
-        for key in Query.Table.field(field).possibleKeys {
+    public func getIfExists<R: RowRetrievable>(_ field: QualifiedField) throws -> R? {
+        for key in field.possibleKeys {
             if let value = try self.data(forColumnNamed: key) {
                 return try R(sqlResult: value)
             }
         }
         return nil
     }
-}
 
-extension Row {
     public func get<R: RowRetrievable>(column: String) throws -> R {
         guard let value: R = try self.getIfExists(column: column) else {
             throw SQLError(

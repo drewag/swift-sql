@@ -13,9 +13,11 @@ public protocol ResultDataProvider {
 
 public struct Result<Query: AnyQuery> {
     fileprivate var dataProvider: ResultDataProvider
+    fileprivate var query: Query
 
-    public init(dataProvider: ResultDataProvider) {
+    public init(dataProvider: ResultDataProvider, query: Query) {
         self.dataProvider = dataProvider
+        self.query = query
     }
 }
 
@@ -31,12 +33,19 @@ extension Result where Query: ChangeQuery {
     }
 }
 
-extension Result where Query: CountReturningQuery {
-    public func count(called: String = "count") throws -> Int {
+extension Result where Query: ScalarReturningQuery {
+    public func scalarIfExists() throws -> Int? {
         guard let row: Row<Query> = self.dataProvider.rows().next() else {
-            return 0
+            return nil
         }
-        return try row.get(column: called)
+        return try row.getIfExists(column: "scalar")
+    }
+
+    public func scalar() throws -> Int {
+        guard let row: Row<Query> = self.dataProvider.rows().next() else {
+            throw SQLError(message: "Failed to calculate scalar because no rows were returned")
+        }
+        return try row.get(column: "scalar")
     }
 }
 

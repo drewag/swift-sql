@@ -9,26 +9,30 @@ public protocol Field: CodingKey {
     var sqlFieldSpec: FieldSpec? {get}
 }
 
-public struct QualifiedField: SQLConvertible, Hashable {
-    let name: String
-    let table: String?
-    let alias: String?
+public struct QualifiedField: QueryComponent, Hashable {
+    public let name: String
+    public let table: String?
+    public let alias: String?
 
     public init(name: String, table: String? = nil, alias: String? = nil) {
-        self.name = name
-        self.table = table
-        self.alias = alias
+        self.name = name.lowercased()
+        self.table = table?.lowercased()
+        self.alias = alias?.lowercased()
     }
 
     public var sql: String {
         var sql = name
         if let table = self.table {
-            sql = "\(table).\(sql)"
+            sql = "\"\(table)\".\"\(sql)\""
         }
         if let alias = self.alias {
             sql += " AS \(alias)"
         }
         return sql
+    }
+
+    public var arguments: [Value] {
+        return []
     }
 
     public var hashValue: Int {
@@ -43,12 +47,6 @@ public struct QualifiedField: SQLConvertible, Hashable {
 extension QualifiedField: ParameterConvertible {
     public var sqlParameter: Parameter {
         return .field(self)
-    }
-}
-
-extension QualifiedField {
-    public var sum: Function {
-        return .sum(Parameter.field(self))
     }
 }
 

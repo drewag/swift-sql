@@ -7,32 +7,15 @@
 
 extension Connection {
     public func executeIgnoringResult(_ query: AnyQuery) throws {
-        try self.run(statement: query.statement, arguments: query.arguments)
+        try self.run(query.statement, arguments: query.arguments)
     }
 
-    @discardableResult
-    public func execute<Query: AnyQuery>(_ query: Query) throws -> Result<Query> {
-        return try self.run(statement: query.statement, arguments: query.arguments)
+    public func execute(any query: AnyQuery) throws {
+        let _ = try self.run(query.statement, arguments: query.arguments)
     }
 
     public func execute<Query: RowReturningQuery>(_ query: Query) throws -> Result<Query> {
-        return try self.run(statement: query.statement, arguments: query.arguments)
-    }
-
-    public func insert<Query: EmptyResultQuery>(_ command: String) throws -> Result<Query> {
-        let query = RawInsertQuery(statement: command)
-        return try self.run(statement: query.statement, arguments: query.arguments)
-    }
-
-    @discardableResult
-    public func update<Query: ChangeQuery>(_ command: String) throws -> Result<Query> {
-        let query = RawUpdateQuery(statement: command)
-        return try self.run(statement: query.statement, arguments: query.arguments)
-    }
-
-    public func delete<Query: ChangeQuery>(_ command: String) throws -> Result<Query> {
-        let query = RawDeleteQuery(statement: command)
-        return try self.run(statement: query.statement, arguments: query.arguments)
+        return try self.execute(query)
     }
 
     public func begin() throws {

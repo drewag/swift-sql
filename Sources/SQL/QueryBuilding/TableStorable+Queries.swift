@@ -7,15 +7,46 @@
 
 extension TableStorable {
     public static func field(_ field: Fields, alias: String? = nil) -> QualifiedField {
-        return QualifiedField(name: field.stringValue, table: self.tableName, alias: alias)
+        return self.field(field.stringValue, alias: alias)
     }
 
-    public static func select(_ selections: [Selectable<Self>] = [.all]) -> SelectQuery<Self> {
-        return SelectQuery(selections: selections)
+    public static func field(_ field: CodingKey, alias: String? = nil) -> QualifiedField {
+        return self.field(field.stringValue, alias: alias)
     }
 
-    public static func selectCount() -> SelectCountQuery<Self> {
-        return SelectCountQuery(selections: [Selectable<Self>.count(.all)])
+    public static func field(_ field: String, alias: String? = nil) -> QualifiedField {
+        return QualifiedField(name: field, table: self.tableName, alias: alias)
+    }
+
+    public static func select(_ selections: [Fields] = [], other: [Selectable] = []) -> SelectQuery<Self> {
+        var finalSelections = [QueryComponent]()
+        if selections.isEmpty && other.isEmpty {
+            finalSelections.append(All())
+        }
+        for selection in selections {
+            finalSelections.append(self.field(selection))
+        }
+        for selection in other {
+            finalSelections.append(selection)
+        }
+        return SelectQuery(selections: finalSelections)
+    }
+
+    public static func selectCount(of selectable: Fields) -> SelectScalarQuery<Self> {
+        return SelectScalarQuery(selection: Function.count(self.field(selectable)))
+    }
+
+    public static func selectCount(ofOther selectable: Selectable? = nil) -> SelectScalarQuery<Self> {
+        return SelectScalarQuery(selection: Function.count(selectable ?? All()))
+    }
+
+    public static func selectMax(of selectable: Fields) -> SelectScalarQuery<Self> {
+        let selection = Function.max(self.field(selectable))
+        return SelectScalarQuery(selection: selection)
+    }
+
+    public static func selectMax(ofOther selectable: QualifiedField) -> SelectScalarQuery<Self> {
+        return SelectScalarQuery(selection: Function.max(selectable))
     }
 
     public static func update(_ updates: [(Fields,ParameterConvertible?)]) -> UpdateTableQuery<Self> {
@@ -26,12 +57,16 @@ extension TableStorable {
         return UpdateTableQuery().setting(setters)
     }
 
-    public static func delete() -> DeleteQuery {
-        return DeleteQuery(from: self.tableName)
+    public static func update(_ updates: [(QualifiedField,ParameterConvertible?)]) -> UpdateTableQuery<Self> {
+        var setters = [QualifiedField:ParameterConvertible?]()
+        for (field, param) in updates {
+            setters[field] = param
+        }
+        return UpdateTableQuery().setting(setters)
     }
 
-    public static func create(fields: [Fields], extra: [FieldSpec] = [], primaryKey: [String] = [], constraints: [Constraint] = []) -> CreateTable {
-        return CreateTable(name: self.tableName, fields: fields.flatMap({$0.sqlFieldSpec}) + extra, primaryKey: primaryKey, constraints: constraints)
+    public static func delete() -> DeleteQuery {
+        return DeleteQuery(from: self.tableName)
     }
 
     public static func addColumn(forField field: Fields) -> AddColumn {
@@ -41,8 +76,12 @@ extension TableStorable {
         return AddColumn(to: self.tableName, with: spec)
     }
 
-    public static func create(fields: [FieldSpec], primaryKey: [String] = [], constraints: [Constraint] = []) -> CreateTable {
-        return CreateTable(name: self.tableName, fields: fields, primaryKey: primaryKey, constraints: constraints)
+    public static func create(ifNotExists: Bool = false, fields: [Fields], extra: [FieldSpec?] = [], primaryKey: [String] = [], constraints: [Constraint] = []) -> CreateTable {
+        return CreateTable(name: self.tableName, ifNotExists: ifNotExists, fields: fields.flatMap({$0.sqlFieldSpec}) + extra.flatMap({$0}), primaryKey: primaryKey, constraints: constraints)
+    }
+
+    public static func create(ifNotExists: Bool = false, fields: [FieldSpec], primaryKey: [String] = [], constraints: [Constraint] = []) -> CreateTable {
+        return CreateTable(name: self.tableName, ifNotExists: ifNotExists, fields: fields, primaryKey: primaryKey, constraints: constraints)
     }
 
     public static func addColumn(withSpec spec: FieldSpec) -> AddColumn {

@@ -20,6 +20,12 @@ extension JoinableQuery {
         return self.joined(to: storableType, on: predicate)
     }
 
+    public func crossJoined<T: TableStorable>(to storableType: T.Type, on predicate: Predicate) -> Self {
+        var new = self
+        new.joins.append(Join(tableName: T.tableName, kind: .cross, on: predicate))
+        return new
+    }
+
     public func leftOuterJoined<T: TableStorable>(to _: T.Type, on predicate: Predicate) -> Self {
         var new = self
         new.joins.append(Join(tableName: T.tableName, kind: .leftOuter, on: predicate))

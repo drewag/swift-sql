@@ -111,6 +111,14 @@ extension ParameterConvertible {
     public func containedIn(_ values: Value?...) -> Predicate {
         return containedIn(values)
     }
+
+    public func like(_ rhs: ParameterConvertible) -> Predicate {
+        return .expression(left: self.sqlParameter, operator: .like, right: rhs.sqlParameter)
+    }
+
+    public func match(_ rhs: ParameterConvertible) -> Predicate {
+        return .expression(left: self.sqlParameter, operator: .match, right: rhs.sqlParameter)
+    }
 }
 
 // MARK: Is Null

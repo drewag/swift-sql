@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Swiftlier
 
 class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: KeyedDecodingContainerProtocol {
     typealias Key = MyKey
@@ -96,13 +97,18 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
             return date as! T
         }
 
-        guard type != Data.self else {
-            return try self.decode(String.self, forKey: key).data(using: .utf8)! as! T
+        guard let data = try self.decode(String.self, forKey: key).data(using: .utf8) else {
+            throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "an unsupported type was found")
         }
 
-        let decoder = RowDecoder(row: self.row, codingPath: self.codingPath + [key])
+        guard type != Data.self else {
+            return data as! T
+        }
+
+        let decoder = JSONDecoder()
         decoder.userInfo = self.userInfo
-        return try T(from: decoder)
+        decoder.dateDecodingStrategy = .formatted(ISO8601DateTimeFormatters.first!)
+        return try decoder.decode(T.self, from: data)
     }
 
     func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {

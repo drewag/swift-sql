@@ -9,6 +9,6 @@ extension SelectQuery {
     public func limited(to limit: Int) -> SelectQuery<T> {
         var new = self
         new.limit = limit
-        return self
+        return new
     }
 }

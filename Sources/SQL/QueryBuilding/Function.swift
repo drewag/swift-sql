@@ -9,6 +9,7 @@ import Foundation
 
 public enum Function: QueryComponent {
     case sum(QueryComponent)
+    case max(QueryComponent)
     case count(QueryComponent)
     case boundedPseudoEncrypt24(value: QueryComponent, max: Int)
     case generateUUIDv4
@@ -25,6 +26,9 @@ public enum Function: QueryComponent {
         case .sum(let summing):
             name = "sum"
             params = [summing.sql]
+        case .max(let maxing):
+            name = "max"
+            params = [maxing.sql]
         case .count(let counting):
             name = "count"
             params = [counting.sql]
@@ -46,6 +50,8 @@ public enum Function: QueryComponent {
         switch self {
         case .sum(let sum):
             return sum.arguments
+        case .max(let maxing):
+            return maxing.arguments
         case .count(let count):
             return count.arguments
         case .boundedPseudoEncrypt24(let value, let max):
@@ -107,5 +113,19 @@ public enum Function: QueryComponent {
 extension Function: ParameterConvertible {
     public var sqlParameter: Parameter {
         return .function(self)
+    }
+}
+
+extension QualifiedField {
+    public var sum: Function {
+        return .sum(Parameter.field(self))
+    }
+
+    public var max: Function {
+        return .max(Parameter.field(self))
+    }
+
+    public var count: Function {
+        return .count(Parameter.field(self))
     }
 }

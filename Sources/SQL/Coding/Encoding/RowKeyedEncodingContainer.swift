@@ -49,6 +49,16 @@ class RowKeyedEncodingContainer<Key: CodingKey, EncoderKey: CodingKey>: KeyedEnc
     }
 
     func encode<T>(_ value: T, forKey key: Key) throws where T : Swift.Encodable {
+        guard !(Mirror(reflecting: value).displayStyle == .optional) else {
+            let encoder = RowEncoder(key: key)
+            encoder.userInfo = self.encoder.userInfo
+            try value.encode(to: encoder)
+            for (key, value) in encoder.setters {
+                self.encoder.setters[key] = value
+            }
+            return
+        }
+
         if let date = value as? Date {
             try self.encode(date.iso8601DateTime, forKey: key)
         }
@@ -56,12 +66,9 @@ class RowKeyedEncodingContainer<Key: CodingKey, EncoderKey: CodingKey>: KeyedEnc
             self.encoder.setters[key.stringValue] = data
         }
         else {
-            let encoder = RowEncoder<Key>(key: key)
+            let encoder = JSONEncoder()
             encoder.userInfo = self.encoder.userInfo
-            try value.encode(to: encoder)
-            for (key, value) in encoder.setters {
-                self.encoder.setters[key] = value
-            }
+            self.encoder.setters[key.stringValue] = try encoder.encode(value)
         }
     }
 

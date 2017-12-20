@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Swiftlier
 
 class RowSingleValueDecodingContainer<Query: RowReturningQuery>: SingleValueDecodingContainer {
     let userInfo: [CodingUserInfoKey:Any]
@@ -90,13 +91,18 @@ class RowSingleValueDecodingContainer<Query: RowReturningQuery>: SingleValueDeco
             return date as! T
         }
 
-        guard type != Data.self else {
-            return try self.decode(String.self).data(using: .utf8)! as! T
+        guard let data = try self.decode(String.self).data(using: .utf8) else {
+            throw DecodingError.dataCorruptedError(in: self, debugDescription: "an unsupported type was found")
         }
 
-        let decoder = RowDecoder(row: self.row, codingPath: self.codingPath)
+        guard type != Data.self else {
+            return data as! T
+        }
+
+        let decoder = JSONDecoder()
         decoder.userInfo = self.userInfo
-        return try T(from: decoder)
+        decoder.dateDecodingStrategy = .formatted(ISO8601DateTimeFormatters.first!)
+        return try decoder.decode(T.self, from: data)
     }
 }
 

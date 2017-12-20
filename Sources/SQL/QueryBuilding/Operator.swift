@@ -17,6 +17,9 @@ public enum Operator: SQLConvertible {
     case contains
     case containedIn
 
+    case like
+    case match
+
     public var sql: String {
         switch self {
         case .equal:
@@ -35,6 +38,10 @@ public enum Operator: SQLConvertible {
             return "CONTAINS"
         case .containedIn:
             return "IN"
+        case .like:
+            return "LIKE"
+        case .match:
+            return "MATCH"
         }
     }
 }

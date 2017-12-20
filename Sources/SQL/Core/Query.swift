@@ -19,7 +19,7 @@ public protocol AnyQuery {
 }
 
 public protocol RowReturningQuery: AnyQuery {}
-public protocol CountReturningQuery: RowReturningQuery {}
+public protocol ScalarReturningQuery: RowReturningQuery {}
 public protocol ChangeQuery: AnyQuery {}
 public protocol EmptyResultQuery: AnyQuery {}
 public protocol TableQuery: AnyQuery {
@@ -35,7 +35,7 @@ extension TableConstrainedQuery {
     }
 }
 
-struct RawEmptyQuery: EmptyResultQuery {
+public struct RawEmptyQuery: EmptyResultQuery {
     public let statement: String
     public let arguments: [Value]
 

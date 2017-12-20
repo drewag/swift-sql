@@ -8,24 +8,25 @@
 import Swiftlier
 
 extension TableStorable where Self: Codable {
-    public func insert() throws -> ConstrainedInsertQuery<Self> {
+    public func insert(userInfo: [CodingUserInfoKey:Any] = [:], otherSetters: [QualifiedField:ParameterConvertible?] = [:]) throws -> ConstrainedInsertQuery<Self> {
         let encoder = RowEncoder<Fields>()
+        encoder.userInfo = userInfo
         encoder.userInfo.location = .local
         encoder.userInfo.purpose = .create
         try self.encode(to: encoder)
-        var insert = ConstrainedInsertQuery<Self>(setters: [:])
+        var insert = ConstrainedInsertQuery<Self>()
         for (key, value) in encoder.setters {
             insert.setters[QualifiedField(name: key.lowercased()).sql] = value?.sqlValue ?? .null
         }
         return insert
     }
 
-    public func update() throws -> UpdateTableQuery<Self> {
+    public func update(userInfo: [CodingUserInfoKey:Any] = [:]) throws -> UpdateTableQuery<Self> {
         let encoder = RowEncoder<Fields>()
+        encoder.userInfo = userInfo
         encoder.userInfo.location = .local
         encoder.userInfo.purpose = .update
         try self.encode(to: encoder)
-        print(encoder.setters)
         var update = UpdateTableQuery<Self>()
         for (key, value) in encoder.setters {
             update.setters[QualifiedField(name: key.lowercased()).sql] = value?.sqlValue ?? .null

@@ -18,6 +18,8 @@ public enum DataType: SQLConvertible {
     case smallint
     case double
     case uuid
+    case data
+    case json
 
     public var sql: String {
         switch self {
@@ -36,6 +38,8 @@ public enum DataType: SQLConvertible {
             else {
                 return "varchar"
             }
+        case .json:
+            return "varchar"
         case .bool:
             return "boolean"
         case .serial:
@@ -50,6 +54,8 @@ public enum DataType: SQLConvertible {
             return "interval"
         case .uuid:
             return "uuid"
+        case .data:
+            return "data"
         }
 
     }

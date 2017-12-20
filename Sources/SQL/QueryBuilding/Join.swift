@@ -11,6 +11,7 @@ public struct Join: QueryComponent {
         case leftOuter = "LEFT OUTER JOIN"
         case rightOuter = "RIGHT OUTER JOIN"
         case fullOuter = "FULL OUTER JOIN"
+        case cross = "CROSS JOIN"
     }
 
     let tableName: String

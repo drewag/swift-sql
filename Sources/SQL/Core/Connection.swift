@@ -12,6 +12,14 @@ public protocol Connection {
 
     func error(_ message: String?) -> SQLError
 
-    func run(statement: String, arguments: [Value]) throws
-    func run<Query: AnyQuery>(statement: String, arguments: [Value]) throws -> Result<Query>
+    func run(_ statement: String, arguments: [Value]) throws
+
+    @discardableResult
+    func execute<Query: AnyQuery>(_ query: Query) throws -> Result<Query>
+}
+
+extension Connection {
+    public func run(_ statement: String) throws {
+        try self.run(statement, arguments: [])
+    }
 }

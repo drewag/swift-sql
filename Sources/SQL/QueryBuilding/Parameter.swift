@@ -7,11 +7,13 @@
 
 import Foundation
 
-public enum Parameter: QueryComponent, ParameterConvertible {
+public indirect enum Parameter: QueryComponent, ParameterConvertible {
     case field(QualifiedField)
     case value(Value?)
     case values([Value?])
     case function(Function)
+    case calculation(Calculation)
+    case alias(String, Parameter)
 //    case query(Select)
     case null
 
@@ -25,6 +27,10 @@ public enum Parameter: QueryComponent, ParameterConvertible {
             return "(" + values.map({$0?.sql ?? "NULL"}).joined(separator: ",") + ")"
         case .function(let function):
             return function.sql
+        case .calculation(let calculation):
+            return calculation.sql
+        case .alias(let alias, let param):
+            return "\(param.sql) AS \(alias)"
 //        case .query(let query):
 //            return "(\(query.sql))"
         case .null:
@@ -45,6 +51,10 @@ public enum Parameter: QueryComponent, ParameterConvertible {
             return values.flatMap({$0})
         case .function(let function):
             return function.arguments
+        case .calculation(let calculation):
+            return calculation.arguments
+        case .alias(_, let param):
+            return param.arguments
         case .null:
             return []
         }
@@ -59,45 +69,20 @@ public protocol ParameterConvertible {
     var sqlParameter: Parameter {get}
 }
 
-extension Date: ParameterConvertible {
-    public var sqlParameter: Parameter {
-        return .function(.toTimestamp(date: self))
+public extension Parameter {
+    func aliased(_ alias: String) -> Parameter {
+        return .alias(alias, self)
     }
 }
 
-public indirect enum Selectable<T: TableStorable>: QueryComponent {
-    case my(T.Fields)
-    case other(QualifiedField)
-    case function(Function)
-    case all
-
-    public static func sum(_ sum: Selectable<T>) -> Selectable<T> {
-        return .function(.sum(sum))
+public extension ParameterConvertible {
+    func aliased(_ alias: String) -> Parameter {
+        return self.sqlParameter.aliased(alias)
     }
+}
 
-    public static func count(_ count: Selectable<T>) -> Selectable<T> {
-        return .function(.count(count))
-    }
-
-    public var sql: String {
-        switch self {
-        case let .my(field):
-            return T.field(field).sql
-        case let .other(field):
-            return field.sql
-        case let .function(function):
-            return function.sql
-        case .all:
-            return "*"
-        }
-    }
-
-    public var arguments: [Value] {
-        switch self {
-        case .my, .other, .all:
-            return []
-        case let .function(function):
-            return function.arguments
-        }
+extension Date: ParameterConvertible {
+    public var sqlParameter: Parameter {
+        return .function(.toTimestamp(date: self))
     }
 }

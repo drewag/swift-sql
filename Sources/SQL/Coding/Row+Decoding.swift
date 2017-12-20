@@ -9,8 +9,9 @@ import Foundation
 import Swiftlier
 
 extension Row {
-    public func decode<D: Decodable>(purpose: CodingPurpose) throws -> D {
+    public func decode<D: Decodable>(purpose: CodingPurpose, userInfo: [CodingUserInfoKey:Any] = [:]) throws -> D {
         let decoder = RowDecoder(row: self)
+        decoder.userInfo = userInfo
         decoder.userInfo.location = .local
         decoder.userInfo.purpose = purpose
         return try D(from: decoder)

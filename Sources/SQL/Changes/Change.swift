@@ -11,6 +11,14 @@ public protocol DatabaseChange {
     var revertQueries: [AnyQuery]? {get}
 }
 
+extension Connection {
+    public func apply(_ change: DatabaseChange) throws {
+        for query in change.forwardQueries {
+            try self.run(query.statement, arguments: query.arguments)
+        }
+    }
+}
+
 public struct FieldReference {
     public enum Action: String {
         case none = "NO ACTION"
@@ -93,7 +101,7 @@ public struct FieldSpec: QueryComponent {
     }
 
     public var sql: String {
-        var description = "\(self.name) \(self.type.sql)"
+        var description = "'\(self.name)' \(self.type.sql)"
         if isPrimaryKey {
             description += " PRIMARY KEY"
         }
@@ -159,16 +167,22 @@ public struct CreateTable: DatabaseChange {
     let fields: [FieldSpec]
     let constraints: [Constraint]
     let primaryKey: [String]
+    let ifNotExists: Bool
 
-    public init(name: String, fields: [FieldSpec], primaryKey: [String] = [], constraints: [Constraint] = []) {
+    public init(name: String, ifNotExists: Bool = false, fields: [FieldSpec], primaryKey: [String] = [], constraints: [Constraint] = []) {
         self.name = name.lowercased()
         self.fields = fields
         self.primaryKey = primaryKey
         self.constraints = constraints
+        self.ifNotExists = ifNotExists
     }
 
     public var forwardQueries: [AnyQuery] {
-        var query = "CREATE TABLE \(name) ("
+        var query = "CREATE TABLE"
+        if self.ifNotExists {
+            query += " IF NOT EXISTS"
+        }
+        query += " \(name) ("
         var specs = self.fields.map({$0.sql})
         let arguments = self.fields.flatMap({$0.arguments})
         if !self.primaryKey.isEmpty {
