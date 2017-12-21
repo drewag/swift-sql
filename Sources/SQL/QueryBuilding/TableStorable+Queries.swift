@@ -84,6 +84,14 @@ extension TableStorable {
         return CreateTable(name: self.tableName, ifNotExists: ifNotExists, fields: fields, primaryKey: primaryKey, constraints: constraints)
     }
 
+    public static func createIndex(for fields: [Fields], isUnique: Bool) -> AddIndex {
+        return AddIndex(
+            to: self.tableName,
+            forColumns: fields.map({$0.stringValue}),
+            isUnique: isUnique
+        )
+    }
+
     public static func addColumn(withSpec spec: FieldSpec) -> AddColumn {
         return AddColumn(to: self.tableName, with: spec)
     }

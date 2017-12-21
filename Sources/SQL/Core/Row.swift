@@ -38,7 +38,8 @@ extension Row {
         guard let value: R = try self.getIfExists(field) else {
             throw SQLError(
                 message: "A value for '\(field.sql)' does not exist",
-                moreInformation: "This result has the following columns: '\(self.columns.joined(separator: "', '"))'")
+                moreInformation: "This result has the following columns: '\(self.columns.joined(separator: "', '"))'"
+            )
         }
         return value
     }

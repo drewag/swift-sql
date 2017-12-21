@@ -16,6 +16,7 @@ public struct All: Selectable {
     public var arguments: [Value] {
         return []
     }
+    public init() {}
 }
 
 extension QualifiedField: Selectable {}

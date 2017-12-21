@@ -217,6 +217,36 @@ public struct AddColumn: DatabaseChange {
     }
 }
 
+public struct AddIndex: DatabaseChange {
+    let table: String
+    let columns: [String]
+    let isUnique: Bool
+
+    var name: String {
+        return "index_\(self.table)_on_\(self.columns.joined(separator: "_"))"
+    }
+
+    public init(to table: String, forColumns columns: [String], isUnique: Bool) {
+        self.table = table.lowercased()
+        self.columns = columns
+        self.isUnique = isUnique
+    }
+
+    public var forwardQueries: [AnyQuery] {
+        var query = "CREATE"
+        if self.isUnique {
+            query += " UNIQUE"
+        }
+        query += " INDEX \(self.name) ON \(self.table) (\(self.columns.joined(separator: ",")))"
+        return [RawEmptyQuery(sql: query)]
+    }
+
+    public var revertQueries: [AnyQuery]? {
+        return [RawEmptyQuery(sql: "DROP INDEX \(self.name) ON \(self.table)")]
+    }
+}
+
+
 public struct RemoveColumn: DatabaseChange {
     let table: String
     let name: String
