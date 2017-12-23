@@ -97,18 +97,29 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
             return date as! T
         }
 
-        guard let data = try self.decode(String.self, forKey: key).data(using: .utf8) else {
-            throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "an unsupported type was found")
-        }
-
         guard type != Data.self else {
-            return data as! T
+            return (try self.decode(String.self, forKey: key).data(using: .utf8) ?? Data()) as! T
         }
 
-        let decoder = JSONDecoder()
-        decoder.userInfo = self.userInfo
-        decoder.dateDecodingStrategy = .formatted(ISO8601DateTimeFormatters.first!)
-        return try decoder.decode(T.self, from: data)
+        do {
+            let decoder = RowDecoder(row: self.row, codingPath: self.codingPath + [key])
+            decoder.userInfo = self.userInfo
+            return try T(from: decoder)
+        }
+        catch {
+            guard let data = try self.decode(String.self, forKey: key).data(using: .utf8) else {
+                throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "an unsupported type was found")
+            }
+
+            guard type != Data.self else {
+                return data as! T
+            }
+
+            let decoder = JSONDecoder()
+            decoder.userInfo = self.userInfo
+            decoder.dateDecodingStrategy = .formatted(ISO8601DateTimeFormatters.first!)
+            return try decoder.decode(T.self, from: data)
+        }
     }
 
     func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {

@@ -101,7 +101,7 @@ public struct FieldSpec: QueryComponent {
     }
 
     public var sql: String {
-        var description = "'\(self.name)' \(self.type.sql)"
+        var description = "\"\(self.name)\" \(self.type.sql)"
         if isPrimaryKey {
             description += " PRIMARY KEY"
         }

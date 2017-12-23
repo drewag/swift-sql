@@ -66,9 +66,18 @@ class RowKeyedEncodingContainer<Key: CodingKey, EncoderKey: CodingKey>: KeyedEnc
             self.encoder.setters[key.stringValue] = data
         }
         else {
-            let encoder = JSONEncoder()
-            encoder.userInfo = self.encoder.userInfo
-            self.encoder.setters[key.stringValue] = try encoder.encode(value)
+            do {
+                let encoder = JSONEncoder()
+                encoder.userInfo = self.encoder.userInfo
+                self.encoder.setters[key.stringValue] = try encoder.encode(value)
+            }
+            catch {
+                let encoder = RowEncoder(key: key)
+                try value.encode(to: encoder)
+                for (key, value) in encoder.setters {
+                    self.encoder.setters[key] = value
+                }
+            }
         }
     }
 
