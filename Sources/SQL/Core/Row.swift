@@ -29,7 +29,7 @@ extension Row where Query: TableConstrainedQuery {
     }
 
     public func getIfExists<R: RowRetrievable>(_ field: Query.Table.Fields) throws -> R? {
-        return try self.get(Query.Table.field(field))
+        return try self.getIfExists(Query.Table.field(field))
     }
 }
 

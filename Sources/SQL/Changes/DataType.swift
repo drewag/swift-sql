@@ -5,6 +5,8 @@
 //  Created by Andrew J Wagner on 12/5/17.
 //
 
+import Foundation
+
 public enum DataType: SQLConvertible {
     case string(length: Int?)
     case timestamp
