@@ -39,8 +39,8 @@ public enum Function: QueryComponent {
             name = "uuid_generate_v4"
             params = []
         case .toTimestamp:
-            name = "to_timestamp"
-            params = ["%@", "'YYYY-MM-DD HH24:MI:SS.USZ'"]
+            name = "====to_timestamp===="
+            params = ["%@"]
         }
         let paramString = params.joined(separator: ",")
         return "\(name)(\(paramString))"
