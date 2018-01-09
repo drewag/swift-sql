@@ -76,6 +76,10 @@ extension TableStorable {
         return AddColumn(to: self.tableName, with: spec)
     }
 
+    public static func removeColumn(named name: String) -> RemoveColumn {
+        return RemoveColumn(from: self.tableName, named: name)
+    }
+
     public static func create(ifNotExists: Bool = false, fields: [Fields], extra: [FieldSpec?] = [], primaryKey: [String] = [], constraints: [Constraint] = []) -> CreateTable {
         return CreateTable(name: self.tableName, ifNotExists: ifNotExists, fields: fields.flatMap({$0.sqlFieldSpec}) + extra.flatMap({$0}), primaryKey: primaryKey, constraints: constraints)
     }
