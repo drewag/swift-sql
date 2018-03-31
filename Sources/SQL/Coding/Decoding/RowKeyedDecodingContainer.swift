@@ -21,7 +21,7 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
     }
 
     var allKeys: [Key] {
-        return self.row.columns.flatMap({Key(stringValue: $0)})
+        return self.row.columns.compactMap({Key(stringValue: $0)})
     }
 
     func contains(_ key: Key) -> Bool {

@@ -81,7 +81,7 @@ extension TableStorable {
     }
 
     public static func create(ifNotExists: Bool = false, fields: [Fields], extra: [FieldSpec?] = [], primaryKey: [String] = [], constraints: [Constraint] = []) -> CreateTable {
-        return CreateTable(name: self.tableName, ifNotExists: ifNotExists, fields: fields.flatMap({$0.sqlFieldSpec}) + extra.flatMap({$0}), primaryKey: primaryKey, constraints: constraints)
+        return CreateTable(name: self.tableName, ifNotExists: ifNotExists, fields: fields.compactMap({$0.sqlFieldSpec}) + extra.compactMap({$0}), primaryKey: primaryKey, constraints: constraints)
     }
 
     public static func create(ifNotExists: Bool = false, fields: [FieldSpec], primaryKey: [String] = [], constraints: [Constraint] = []) -> CreateTable {

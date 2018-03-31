@@ -48,7 +48,7 @@ public indirect enum Parameter: QueryComponent, ParameterConvertible {
             }
             return [value]
         case .values(let values):
-            return values.flatMap({$0})
+            return values.compactMap({$0})
         case .function(let function):
             return function.arguments
         case .calculation(let calculation):
