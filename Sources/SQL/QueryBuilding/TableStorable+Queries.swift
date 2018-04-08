@@ -124,9 +124,17 @@ extension Field {
             return nil
         }
 
+        var type = spec.type
+        switch type {
+        case .serial:
+            type = .integer
+        default:
+            break
+        }
+
         return FieldSpec(
             name: self.stringValue,
-            type: spec.type,
+            type: type,
             allowNull: allowNull,
             isUnique: isUnique,
             references: .field(referencing.stringValue, in: R.tableName, onDelete: onDelete, onUpdate: onUpdate),
