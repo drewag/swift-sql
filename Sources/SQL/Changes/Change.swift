@@ -61,9 +61,9 @@ public struct Constraint: CustomStringConvertible {
         var description = "CONSTRAINT \(self.name) "
         switch kind {
         case .unique(let unique):
-            description += "UNIQUE ("
-            description += unique.joined(separator: ",")
-            description += ")"
+            description += "UNIQUE (\""
+            description += unique.joined(separator: "\",\"")
+            description += "\")"
         }
         return description
     }
@@ -129,6 +129,17 @@ public struct FieldSpec: QueryComponent {
 public struct CustomChange: DatabaseChange {
     public let forwardQueries: [AnyQuery]
     public let revertQueries: [AnyQuery]?
+
+    public init(forwardQuery: String, revertQuery: String? = nil) {
+        let revert: AnyQuery?
+        if let revertQuery = revertQuery {
+            revert = RawEmptyQuery(sql: revertQuery)
+        }
+        else {
+            revert = nil
+        }
+        self.init(forwardQuery: RawEmptyQuery(sql: forwardQuery), revertQuery: revert)
+    }
 
     public init(forwardQuery: AnyQuery, revertQuery: AnyQuery? = nil) {
         self.forwardQueries = [forwardQuery]
@@ -246,7 +257,6 @@ public struct AddIndex: DatabaseChange {
     }
 }
 
-
 public struct RemoveColumn: DatabaseChange {
     let table: String
     let name: String
@@ -262,5 +272,121 @@ public struct RemoveColumn: DatabaseChange {
 
     public var revertQueries: [AnyQuery]? {
         return nil
+    }
+}
+
+public struct InsertRow: DatabaseChange {
+    let table: String
+    let values: [String]
+
+    public init(into table: String, values: [String]) {
+        self.table = table.lowercased()
+        self.values = values
+    }
+
+    public var forwardQueries: [AnyQuery] {
+        var query = "INSERT INTO \(self.table) VALUES ("
+        query += self.values.joined(separator: ",")
+        query += ")"
+        return [RawEmptyQuery(sql: query)]
+    }
+
+    public var revertQueries: [AnyQuery]? {
+        return nil
+    }
+}
+
+public struct CreateBoundedPseudoEncrypt: DatabaseChange {
+    public static func callWith(value: String, min: Int, max: Int) -> Parameter {
+        let count = max - min
+        return .custom("bounded_pseudo_encrypt(\(value), \(count)) + \(min)")
+    }
+
+    public init() {}
+
+    public var forwardQueries: [AnyQuery] {
+        var queries = [String]()
+        queries.append("""
+            CREATE FUNCTION pseudo_encrypt_24(VALUE int) returns int AS $$
+            DECLARE
+            l1 int;
+            l2 int;
+            r1 int;
+            r2 int;
+            i int:=0;
+            BEGIN
+              l1:= (VALUE >> 12) & (4096-1);
+              r1:= VALUE & (4096-1);
+              WHILE i < 3 LOOP
+                l2 := r1;
+                r2 := l1 # ((((1366 * r1 + 150889) % 714025) / 714025.0) * (4096-1))::int;
+                l1 := l2;
+                r1 := r2;
+                i := i + 1;
+              END LOOP;
+              RETURN ((l1 << 12) + r1);
+            END;
+            $$ LANGUAGE plpgsql strict immutable;
+            """
+        )
+        queries.append("""
+            CREATE FUNCTION bounded_pseudo_encrypt(VALUE int, MAX int) returns int AS $$
+            BEGIN
+              LOOP
+                VALUE := pseudo_encrypt_24(VALUE);
+                EXIT WHEN VALUE <= MAX;
+              END LOOP;
+              RETURN VALUE;
+            END
+            $$ LANGUAGE plpgsql strict immutable;
+            """
+        )
+        return queries.map({RawEmptyQuery(sql: $0)})
+    }
+
+    public var revertQueries: [AnyQuery]? {
+        return [RawEmptyQuery(sql: "DROP FUNCTION bounded_pseudo_encrypt(int,int);DROP FUNCTION pseudo_encrypt_24(int)")]
+    }
+}
+
+public struct AlterColumn: DatabaseChange {
+    public enum Action {
+        case type(String)
+
+        var query: String {
+            switch self {
+            case .type(let action):
+                return "TYPE \(action)"
+            }
+        }
+    }
+
+    let tableName: String
+    let columnName: String
+    let from: Action
+    let to: Action
+
+    public var forwardQueries: [AnyQuery] {
+        let query = "ALTER TABLE \(self.tableName) ALTER COLUMN \(self.columnName) " + self.to.query
+        return [RawEmptyQuery(sql: query)]
+    }
+
+    public var revertQueries: [AnyQuery]? {
+        let query = "ALTER TABLE \(self.tableName) ALTER COLUMN \(self.columnName) " + self.from.query
+        return [RawEmptyQuery(sql: query)]
+    }
+}
+
+public struct RenameColumn: DatabaseChange {
+    let tableName: String
+    let columnName: String
+    let to: String
+
+    public var forwardQueries: [AnyQuery] {
+        return [RawEmptyQuery(sql: "ALTER TABLE \(self.tableName) RENAME COLUMN \(self.columnName) TO \(to)")]
+    }
+
+    public var revertQueries: [AnyQuery]? {
+        return [RawEmptyQuery(sql: "ALTER TABLE \(self.tableName) RENAME COLUMN \(self.columnName) TO \(columnName)")]
     }
 }

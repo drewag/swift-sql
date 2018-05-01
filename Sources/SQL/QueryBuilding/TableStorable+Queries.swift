@@ -99,6 +99,18 @@ extension TableStorable {
     public static func addColumn(withSpec spec: FieldSpec) -> AddColumn {
         return AddColumn(to: self.tableName, with: spec)
     }
+
+    public static func alterColumn(named: String, from: AlterColumn.Action, to: AlterColumn.Action) -> AlterColumn {
+        return AlterColumn(tableName: self.tableName, columnName: named, from: from, to: to)
+    }
+
+    public static func renameColumn(named: String, to: String) -> RenameColumn {
+        return RenameColumn(tableName: self.tableName, columnName: named, to: to)
+    }
+
+    public static func insertRow(values: [String]) -> InsertRow {
+        return InsertRow(into: self.tableName, values: values)
+    }
 }
 
 extension Field {
