@@ -217,10 +217,37 @@ extension Double: RowRetrievable {
         guard let string = String(data: sqlResult, encoding: .utf8) else {
             throw SQLError(message: "Invalid Double value", moreInformation: "Not a string")
         }
-        guard let value = Double(string) else {
-            throw SQLError(message: "Invalid Double value", moreInformation: "Was '\(string)'")
+        if let value = Double(string) {
+            self = value
+            return
         }
-        self = value
+
+        let components = string.components(separatedBy: ":")
+        if components.count == 3 {
+            // Potential Time Interval
+            // [DD ]HH:MM:SS
+            let days: Int?
+            let hours: Int?
+            let spaceComponents = components[0].components(separatedBy: " ")
+            if spaceComponents.count == 2 {
+                // DD HH
+                days = Int(spaceComponents[0])
+                hours = Int(spaceComponents[1])
+            }
+            else {
+                // HH
+                days = 0
+                hours = Int(components[0])
+            }
+            let minutes = Int(components[1])
+            let seconds = Int(components[2])
+
+            if let d = days, let h = hours, let m = minutes, let s = seconds {
+                self = Double(s + m * 60 + h * 60 * 60 + d * 60 * 60 * 24)
+                return
+            }
+        }
+        throw SQLError(message: "Invalid Double value", moreInformation: "Was '\(string)'")
     }
 }
 
