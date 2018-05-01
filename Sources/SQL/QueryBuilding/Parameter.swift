@@ -85,4 +85,8 @@ extension Date: ParameterConvertible {
     public var sqlParameter: Parameter {
         return .function(.toTimestamp(date: self))
     }
+
+    public var local: Parameter {
+        return .function(.toLocalTimestamp(date: self))
+    }
 }

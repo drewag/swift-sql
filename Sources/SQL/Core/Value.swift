@@ -52,6 +52,10 @@ extension Date: ValueConvertible {
     public var sqlValue: Value {
         return .string(self.iso8601DateTime)
     }
+
+    public var localSqlValue: Value {
+        return .string(self.localIso8601DateTime)
+    }
 }
 
 extension String: ValueConvertible {

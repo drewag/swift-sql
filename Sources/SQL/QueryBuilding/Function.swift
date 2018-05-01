@@ -15,6 +15,7 @@ public enum Function: QueryComponent {
     case generateUUIDv4
     case custom(name: String, params: [QueryComponent])
     case toTimestamp(date: Date)
+    case toLocalTimestamp(date: Date)
 
     public var sql: String {
         let name: String
@@ -41,6 +42,9 @@ public enum Function: QueryComponent {
         case .toTimestamp:
             name = "====to_timestamp===="
             params = ["%@"]
+        case .toLocalTimestamp:
+            name = "====to_local_timestamp===="
+            params = ["%@"]
         }
         let paramString = params.joined(separator: ",")
         return "\(name)(\(paramString))"
@@ -62,6 +66,8 @@ public enum Function: QueryComponent {
             return params.flatMap({$0.arguments})
         case .toTimestamp(let date):
             return [date.sqlValue]
+        case .toLocalTimestamp(let date):
+            return [date.localSqlValue]
         }
     }
 
