@@ -57,7 +57,8 @@ public struct SelectQuery<T: TableStorable>: RowReturningQuery, FilterableQuery,
     }
 
     public var arguments: [Value] {
-        return self.joins.flatMap({$0.arguments})
+        return self.selections.flatMap({$0.arguments})
+            + self.joins.flatMap({$0.arguments})
             + (predicate?.arguments ?? [])
             + groupBy.flatMap({$0.arguments})
             + (having?.arguments ?? [])
@@ -112,5 +113,16 @@ public struct SelectScalarQuery<T: TableStorable>: ScalarReturningQuery, Filtera
             + groupBy.flatMap({$0.arguments})
             + (having?.arguments ?? [])
             + orderBy.flatMap({$0.arguments})
+    }
+}
+
+public struct RawSelectQuery: RowReturningQuery {
+    public var statement: String
+
+    public var arguments: [Value]
+
+    public init(sql: String, arguments: [Value] = []) {
+        self.statement = sql
+        self.arguments = arguments
     }
 }

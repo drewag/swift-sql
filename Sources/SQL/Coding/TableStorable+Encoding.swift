@@ -7,7 +7,7 @@
 
 import Swiftlier
 
-extension TableStorable where Self: Codable {
+extension TableStorable where Self: Encodable {
     public func insert(userInfo: [CodingUserInfoKey:Any] = [:], otherSetters: [QualifiedField:ParameterConvertible?] = [:]) throws -> ConstrainedInsertQuery<Self> {
         let encoder = RowEncoder<Fields>()
         encoder.userInfo = userInfo

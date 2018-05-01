@@ -14,6 +14,7 @@ public indirect enum Parameter: QueryComponent, ParameterConvertible {
     case function(Function)
     case calculation(Calculation)
     case alias(String, Parameter)
+    case custom(String)
 //    case query(Select)
     case null
 
@@ -31,6 +32,8 @@ public indirect enum Parameter: QueryComponent, ParameterConvertible {
             return calculation.sql
         case .alias(let alias, let param):
             return "\(param.sql) AS \(alias)"
+        case .custom(let custom):
+            return custom
 //        case .query(let query):
 //            return "(\(query.sql))"
         case .null:
@@ -40,7 +43,7 @@ public indirect enum Parameter: QueryComponent, ParameterConvertible {
 
     public var arguments: [Value] {
         switch self {
-        case .field:
+        case .field, .custom:
             return []
         case .value(let value):
             guard let value = value else {
