@@ -5,7 +5,7 @@
 //  Created by Andrew J Wagner on 12/5/17.
 //
 
-public protocol Field: CodingKey {
+public protocol Field: CodingKey, CaseIterable {
     var sqlFieldSpec: FieldSpec? {get}
 }
 

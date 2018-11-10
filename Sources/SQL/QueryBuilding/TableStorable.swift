@@ -5,8 +5,10 @@
 //  Created by Andrew J Wagner on 12/5/17.
 //
 
-public protocol TableStorable {
-    associatedtype Fields: Field
-
+public protocol TableDecodable {
     static var tableName: String {get}
+}
+
+public protocol TableStorable: TableDecodable {
+    associatedtype Fields: Field
 }

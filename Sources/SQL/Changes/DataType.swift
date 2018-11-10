@@ -59,6 +59,5 @@ public enum DataType: SQLConvertible {
         case .data:
             return "data"
         }
-
     }
 }

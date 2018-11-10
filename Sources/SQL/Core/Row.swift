@@ -12,7 +12,8 @@ public protocol RowRetrievable {
 }
 
 open class Row<Query: RowReturningQuery> {
-    public init() {}
+    public init() {
+    }
 
     open func data(forColumnNamed name: String) throws -> Data? {
         fatalError("Must override")
@@ -54,17 +55,27 @@ extension Row {
     }
 
     public func get<R: RowRetrievable>(column: String) throws -> R {
-        guard let value: R = try self.getIfExists(column: column) else {
+        return try self.get(column: [column])
+    }
+
+    public func get<R: RowRetrievable>(column possibleNames: [String]) throws -> R {
+        guard let value: R = try self.getIfExists(column: possibleNames) else {
             throw SQLError(
-                message: "A value for '\(column)' does not exist",
+                message: "A value for '\(possibleNames)' does not exist",
                 moreInformation: "This result has the following columns: '\(self.columns.joined(separator: "', '"))'")
         }
         return value
     }
 
     public func getIfExists<R: RowRetrievable>(column: String) throws -> R? {
-        if let value = try self.data(forColumnNamed: column) {
-            return try R(sqlResult: value)
+        return try self.getIfExists(column: [column])
+    }
+
+    public func getIfExists<R: RowRetrievable>(column possibleNames: [String]) throws -> R? {
+        for column in possibleNames {
+            if let value = try self.data(forColumnNamed: column) {
+                return try R(sqlResult: value)
+            }
         }
         return nil
     }
@@ -284,7 +295,7 @@ extension QualifiedField {
             return [alias]
         }
         else if let table = self.table {
-            return ["\(table).\(self.name)", self.name]
+            return ["\(table)__\(self.name)","\(table).\(self.name)", self.name]
         }
         else {
             return [self.name]

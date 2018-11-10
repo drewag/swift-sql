@@ -6,6 +6,10 @@
 //
 
 extension TableStorable {
+    public static var all: Selectable {
+        return All(table: self.tableName)
+    }
+
     public static func field(_ field: Fields, alias: String? = nil) -> QualifiedField {
         return self.field(field.stringValue, alias: alias)
     }
@@ -19,9 +23,16 @@ extension TableStorable {
     }
 
     public static func select(_ selections: [Fields] = [], other: [Selectable] = []) -> SelectQuery<Self> {
+        let isSelectingAll: Bool
         var finalSelections = [QueryComponent]()
         if selections.isEmpty && other.isEmpty {
-            finalSelections.append(All())
+            isSelectingAll = true
+            for field in Fields.allCases {
+                finalSelections.append(self.field(field).aliased("\(self.tableName)__\(field.stringValue)"))
+            }
+        }
+        else {
+            isSelectingAll = false
         }
         for selection in selections {
             finalSelections.append(self.field(selection))
@@ -29,7 +40,7 @@ extension TableStorable {
         for selection in other {
             finalSelections.append(selection)
         }
-        return SelectQuery(selections: finalSelections)
+        return SelectQuery(selections: finalSelections, isSelectingAll: isSelectingAll)
     }
 
     public static func selectCount(of selectable: Fields) -> SelectScalarQuery<Self> {

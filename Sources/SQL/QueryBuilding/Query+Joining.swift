@@ -7,12 +7,15 @@
 
 public protocol JoinableQuery: AnyQuery {
     var joins: [Join] {get set}
+
+    mutating func didJoin<T: TableStorable>(to storableType: T.Type)
 }
 
 extension JoinableQuery {
     public func joined<T: TableStorable>(to storableType: T.Type, on predicate: Predicate) -> Self {
         var new = self
         new.joins.append(Join(tableName: T.tableName, kind: .inner, on: predicate))
+        new.didJoin(to: storableType)
         return new
     }
 
@@ -23,24 +26,28 @@ extension JoinableQuery {
     public func crossJoined<T: TableStorable>(to storableType: T.Type, on predicate: Predicate) -> Self {
         var new = self
         new.joins.append(Join(tableName: T.tableName, kind: .cross, on: predicate))
+        new.didJoin(to: storableType)
         return new
     }
 
-    public func leftOuterJoined<T: TableStorable>(to _: T.Type, on predicate: Predicate) -> Self {
+    public func leftOuterJoined<T: TableStorable>(to storableType: T.Type, on predicate: Predicate) -> Self {
         var new = self
         new.joins.append(Join(tableName: T.tableName, kind: .leftOuter, on: predicate))
+        new.didJoin(to: storableType)
         return new
     }
 
     public func rightOuterJoined<T: TableStorable>(to storableType: T.Type, on predicate: Predicate) -> Self {
         var new = self
         new.joins.append(Join(tableName: T.tableName, kind: .rightOuter, on: predicate))
+        new.didJoin(to: storableType)
         return new
     }
 
     public func fullOuterJoined<T: TableStorable>(to storableType: T.Type, on predicate: Predicate) -> Self {
         var new = self
         new.joins.append(Join(tableName: T.tableName, kind: .fullOuter, on: predicate))
+        new.didJoin(to: storableType)
         return new
     }
 }

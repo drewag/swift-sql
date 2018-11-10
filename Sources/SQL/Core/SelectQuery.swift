@@ -16,9 +16,11 @@ public struct SelectQuery<T: TableStorable>: RowReturningQuery, FilterableQuery,
     public var orderDirection: OrderDirection = .ascending
     public var groupBy: [QueryComponent] = []
     public var having: Predicate? = nil
+    public var isSelectingAll: Bool
 
-    init(selections: [QueryComponent]) {
+    init(selections: [QueryComponent], isSelectingAll: Bool) {
         self.selections = selections
+        self.isSelectingAll = isSelectingAll
     }
 
     public var statement: String {
@@ -63,6 +65,14 @@ public struct SelectQuery<T: TableStorable>: RowReturningQuery, FilterableQuery,
             + groupBy.flatMap({$0.arguments})
             + (having?.arguments ?? [])
             + orderBy.flatMap({$0.arguments})
+    }
+
+    public mutating func didJoin<T: TableStorable>(to storableType: T.Type) {
+        if self.isSelectingAll {
+            for field in storableType.Fields.allCases {
+                self.selections.append(T.field(field).aliased("\(T.tableName)__\(field.stringValue)"))
+            }
+        }
     }
 }
 

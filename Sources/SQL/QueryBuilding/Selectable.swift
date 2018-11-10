@@ -10,9 +10,19 @@ public protocol Selectable: QueryComponent {
 }
 
 public struct All: Selectable {
+    var table: String?
+
+    init(table: String? = nil) {
+        self.table = table
+    }
+
     public var sql: String {
+        if let table = self.table {
+            return "\(table).*"
+        }
         return "*"
     }
+
     public var arguments: [Value] {
         return []
     }
