@@ -77,6 +77,20 @@ extension Row {
                 return try R(sqlResult: value)
             }
         }
+        let columnDict = self.columns.reduce(into: [String:String]()) { result, name in
+            let components = name.components(separatedBy: "__")
+            guard components.count >= 2, let last = components.last else {
+                return
+            }
+            result[last] = name
+        }
+        for name in possibleNames {
+            if let originalName = columnDict[name]
+                , let value = try self.data(forColumnNamed: originalName)
+            {
+                return try R(sqlResult: value)
+            }
+        }
         return nil
     }
 }
