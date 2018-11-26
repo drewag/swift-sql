@@ -126,6 +126,13 @@ public struct FieldSpec: QueryComponent {
     }
 }
 
+public struct NoChange: DatabaseChange {
+    public let forwardQueries: [AnyQuery] = []
+    public let revertQueries: [AnyQuery]? = []
+
+    public init() {}
+}
+
 public struct CustomChange: DatabaseChange {
     public let forwardQueries: [AnyQuery]
     public let revertQueries: [AnyQuery]?
