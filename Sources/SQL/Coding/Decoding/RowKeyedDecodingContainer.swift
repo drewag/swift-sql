@@ -91,6 +91,10 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
         return try self.row.get(column: self.rawKeys(for: key))
     }
 
+    func decode(_ type: Data.Type, forKey key: Key) throws -> Data {
+        return try self.row.get(column: self.rawKeys(for: key))
+    }
+
     func decode<D>(_ type: D.Type, forKey key: Key) throws -> D where D: Swift.Decodable {
         guard type != Date.self else {
             guard let date = try self.decode(String.self, forKey: key).iso8601DateTime else {
@@ -100,7 +104,7 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
         }
 
         guard type != Data.self else {
-            return (try self.decode(String.self, forKey: key).data(using: .utf8) ?? Data()) as! D
+            return try self.decode(Data.self, forKey: key) as! D
         }
 
         do {
@@ -110,9 +114,7 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
             return try D(from: decoder)
         }
         catch {
-            guard let data = try self.decode(String.self, forKey: key).data(using: .utf8) else {
-                throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "an unsupported type was found")
-            }
+            let data = try self.decode(Data.self, forKey: key)
 
             guard type != Data.self else {
                 return data as! D

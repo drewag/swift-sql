@@ -16,11 +16,11 @@ class RowKeyedEncodingContainer<Key: CodingKey, EncoderKey: CodingKey>: KeyedEnc
     }
 
     func superEncoder() -> Swift.Encoder {
-        fatalError("SQLiteEncoding does not support super encoders")
+        return self.encoder
     }
 
     func superEncoder(forKey key: Key) -> Swift.Encoder {
-        fatalError("SQLiteEncoding does not support super encoders")
+        return self.encoder
     }
 
     func encodeNil(forKey key: Key) throws {

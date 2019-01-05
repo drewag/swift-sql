@@ -303,6 +303,12 @@ extension Date: RowRetrievable {
     }
 }
 
+extension Data: RowRetrievable {
+    public init(sqlResult: Data) throws {
+        self = sqlResult
+    }
+}
+
 extension QualifiedField {
     var possibleKeys: [String] {
         if let alias = self.alias {
