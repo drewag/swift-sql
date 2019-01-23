@@ -22,7 +22,7 @@ extension TableStorable {
         return QualifiedField(name: field, table: self.tableName, alias: alias)
     }
 
-    public static func select(_ selections: [Fields] = [], other: [Selectable] = []) -> SelectQuery<Self> {
+    public static func select(_ selections: [Fields] = [], other: [Selectable] = [], distinctOn: QueryComponent? = nil) -> SelectQuery<Self> {
         let isSelectingAll: Bool
         var finalSelections = [QueryComponent]()
         if selections.isEmpty && other.isEmpty {
@@ -40,7 +40,7 @@ extension TableStorable {
         for selection in other {
             finalSelections.append(selection)
         }
-        return SelectQuery(selections: finalSelections, isSelectingAll: isSelectingAll)
+        return SelectQuery(selections: finalSelections, distinctOn: distinctOn, isSelectingAll: isSelectingAll)
     }
 
     public static func selectCount(of selectable: Fields) -> SelectScalarQuery<Self> {

@@ -17,14 +17,22 @@ public struct SelectQuery<T: TableStorable>: RowReturningQuery, FilterableQuery,
     public var groupBy: [QueryComponent] = []
     public var having: Predicate? = nil
     public var isSelectingAll: Bool
+    public var distinctOn: QueryComponent?
 
-    init(selections: [QueryComponent], isSelectingAll: Bool) {
+    init(selections: [QueryComponent], distinctOn: QueryComponent?, isSelectingAll: Bool) {
         self.selections = selections
         self.isSelectingAll = isSelectingAll
+        self.distinctOn = distinctOn
     }
 
     public var statement: String {
-        var sql = "SELECT \(selections.map({$0.sql}).joined(separator: ", ")) FROM \(T.tableName)"
+        var sql = "SELECT"
+
+        if let distinctOn = self.distinctOn {
+            sql += " DISTINCT ON (\(distinctOn.sql))"
+        }
+
+        sql += " \(selections.map({$0.sql}).joined(separator: ", ")) FROM \(T.tableName)"
 
         for join in self.joins {
             sql += " \(join.sql)"
@@ -59,7 +67,8 @@ public struct SelectQuery<T: TableStorable>: RowReturningQuery, FilterableQuery,
     }
 
     public var arguments: [Value] {
-        return self.selections.flatMap({$0.arguments})
+        return (distinctOn?.arguments ?? [])
+            + self.selections.flatMap({$0.arguments})
             + self.joins.flatMap({$0.arguments})
             + (predicate?.arguments ?? [])
             + groupBy.flatMap({$0.arguments})
