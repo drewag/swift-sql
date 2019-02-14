@@ -11,14 +11,18 @@ import Swiftlier
 class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: KeyedDecodingContainerProtocol {
     typealias Key = MyKey
 
-    let userInfo: [CodingUserInfoKey:Any]
+    let decoder: RowDecoder<Query>
     let codingPath: [CodingKey] = []
     let row: Row<Query>
     let tableName: String?
 
-    init(row: Row<Query>, userInfo: [CodingUserInfoKey:Any], tableName: String?) {
+    var userInfo: [CodingUserInfoKey:Any] {
+        return self.decoder.userInfo
+    }
+
+    init(row: Row<Query>, decoder: RowDecoder<Query>, tableName: String?) {
         self.row = row
-        self.userInfo = userInfo
+        self.decoder = decoder
         self.tableName = tableName
     }
 
@@ -136,7 +140,7 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
     }
 
     func superDecoder() throws -> Swift.Decoder {
-        throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: self.codingPath, debugDescription: "decoding super encoders containers is not supported"))
+        return self.decoder
     }
 
     func superDecoder(forKey key: Key) throws -> Swift.Decoder {

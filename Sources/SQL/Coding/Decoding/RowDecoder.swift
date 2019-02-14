@@ -18,7 +18,7 @@ class RowDecoder<Query: RowReturningQuery>: Decoder {
     }
 
     func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> where Key : CodingKey {
-        return KeyedDecodingContainer(RowKeyedDecodingContainer(row: self.row, userInfo: self.userInfo, tableName: self.tableName))
+        return KeyedDecodingContainer(RowKeyedDecodingContainer(row: self.row, decoder: self, tableName: self.tableName))
     }
 
     func unkeyedContainer() throws -> UnkeyedDecodingContainer {
