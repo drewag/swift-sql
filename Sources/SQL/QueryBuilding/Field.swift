@@ -35,8 +35,8 @@ public struct QualifiedField: QueryComponent, Hashable {
         return []
     }
 
-    public var hashValue: Int {
-        return self.stringToCompareForUniqueness.hashValue
+    public func hash(into hasher: inout Hasher) {
+        self.stringToCompareForUniqueness.hash(into: &hasher)
     }
 
     public static func ==(lhs: QualifiedField, rhs: QualifiedField) -> Bool {

@@ -12,7 +12,7 @@ public protocol FilterableQuery: AnyQuery {
     var predicate: Predicate? { get set }
 }
 
-public extension FilterableQuery {
+extension FilterableQuery {
     public mutating func filter(_ value: Predicate)  {
         guard let existing = predicate else {
             predicate = value
