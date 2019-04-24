@@ -217,6 +217,22 @@ public struct CreateTable: DatabaseChange {
     }
 }
 
+public struct DropTable: DatabaseChange {
+    let name: String
+
+    public init(name: String) {
+        self.name = name
+    }
+
+    public var forwardQueries: [AnyQuery] {
+        return [RawEmptyQuery(sql: "DROP TABLE \(self.name)")]
+    }
+
+    public var revertQueries: [AnyQuery]? {
+        return nil
+    }
+}
+
 public struct AddColumn: DatabaseChange {
     let table: String
     let spec: FieldSpec
