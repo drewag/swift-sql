@@ -60,6 +60,15 @@ extension TableStorable {
         return SelectScalarQuery(selection: Function.max(selectable))
     }
 
+    public static func selectSum(of selectable: Fields) -> SelectScalarQuery<Self> {
+        let selection = Function.sum(self.field(selectable))
+        return SelectScalarQuery(selection: selection)
+    }
+
+    public static func selectSum(ofOther selectable: QualifiedField) -> SelectScalarQuery<Self> {
+        return SelectScalarQuery(selection: Function.sum(selectable))
+    }
+
     public static func update(_ updates: [(Fields,ParameterConvertible?)]) -> UpdateTableQuery<Self> {
         var setters = [QualifiedField:ParameterConvertible?]()
         for (field, param) in updates {
