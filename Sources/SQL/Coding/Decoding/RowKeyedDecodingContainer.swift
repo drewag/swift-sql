@@ -31,8 +31,8 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
     }
 
     func contains(_ key: Key) -> Bool {
-        let string: String? = (try? self.row.getIfExists(column: self.rawKeys(for: key))) ?? nil
-        return string != nil
+        let data: Data? = (try? self.row.getIfExists(column: self.rawKeys(for: key))) ?? nil
+        return data != nil
     }
 
     func decodeNil(forKey key: Key) throws -> Bool {
