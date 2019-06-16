@@ -20,8 +20,6 @@ public enum Operator: SQLConvertible {
     case like
     case match
 
-    case earthDistance
-
     public var sql: String {
         switch self {
         case .equal:
@@ -44,8 +42,6 @@ public enum Operator: SQLConvertible {
             return "LIKE"
         case .match:
             return "MATCH"
-        case .earthDistance:
-            return "<@>"
         }
     }
 }

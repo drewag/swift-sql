@@ -16,6 +16,7 @@ public enum Function: QueryComponent {
     case custom(name: String, params: [QueryComponent])
     case toTimestamp(date: Date)
     case toLocalTimestamp(date: Date)
+    case earthDistance(QueryComponent, QueryComponent)
 
     public var sql: String {
         let name: String
@@ -45,6 +46,8 @@ public enum Function: QueryComponent {
         case .toLocalTimestamp:
             name = "====to_local_timestamp===="
             params = ["%@"]
+        case .earthDistance(let lhs, let rhs):
+            return "\(lhs.sql) <@> \(rhs.sql)"
         }
         let paramString = params.joined(separator: ",")
         return "\(name)(\(paramString))"
@@ -68,6 +71,8 @@ public enum Function: QueryComponent {
             return [date.sqlValue]
         case .toLocalTimestamp(let date):
             return [date.localSqlValue]
+        case .earthDistance(let lhs, let rhs):
+            return lhs.arguments + rhs.arguments
         }
     }
 
@@ -133,5 +138,9 @@ extension QualifiedField {
 
     public var count: Function {
         return .count(Parameter.field(self))
+    }
+
+    public func distanceTo(point: Point) -> Function {
+        return .earthDistance(self, point.sqlValue)
     }
 }

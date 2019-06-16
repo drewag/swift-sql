@@ -38,4 +38,11 @@ extension OrderableQuery {
         new.orderDirection = direction
         return new
     }
+
+    public func ordered(by queryComponent: QueryComponent, _ direction: OrderDirection = .ascending) -> Self {
+        var new = self
+        new.orderBy = [queryComponent]
+        new.orderDirection = direction
+        return new
+    }
 }

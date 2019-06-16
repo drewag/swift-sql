@@ -77,11 +77,6 @@ public func <= (lhs: ParameterConvertible?, rhs: ParameterConvertible?) -> Predi
     return .expression(left: lhs?.sqlParameter ?? .value(.null), operator: .lessThanOrEqual, right: rhs?.sqlParameter ?? .value(.null))
 }
 
-infix operator |---|
-public func |---| (lhs: ParameterConvertible?, rhs: ParameterConvertible?) -> Predicate {
-    return .expression(left: lhs?.sqlParameter ?? .value(.null), operator: .earthDistance, right: rhs?.sqlParameter ?? .value(.null))
-}
-
 // MARK: Contains
 
 extension ParameterConvertible {
