@@ -90,6 +90,10 @@ extension QueryComponent {
                     output += "\(value)"
                 case .uint64(let value):
                     output += "\(value)"
+                case .point(let x, let y):
+                    output += "\(x),\(y)"
+                case let .time(hour, minute, second):
+                    output += "\(hour):\(minute):\(second)"
                 }
                 varCount += 1
             }

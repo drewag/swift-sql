@@ -111,6 +111,11 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
             return try self.decode(Data.self, forKey: key) as! D
         }
 
+        guard type != Point.self else {
+            let data = try self.decode(Data.self, forKey: key)
+            return Point(x: 0, y: 0) as! D
+        }
+
         do {
             let tableName = (type as? TableDecodable.Type)?.tableName ?? self.tableName
             let decoder = RowDecoder(row: self.row, forTableNamed: tableName, codingPath: self.codingPath + [key])

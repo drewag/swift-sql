@@ -29,6 +29,9 @@ public enum Value: QueryComponent {
     case bool(Bool)
     case null
 
+    case point(x: Float, y: Float)
+    case time(hour: Int, minute: Int, second: Int)
+
     public var sql: String {
         return "%@"
     }

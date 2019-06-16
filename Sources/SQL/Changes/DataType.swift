@@ -11,6 +11,7 @@ public enum DataType: SQLConvertible {
     case string(length: Int?)
     case timestamp
     case timestampWithTimeZone
+    case time
     case interval
     case ipAddress
     case date
@@ -19,9 +20,11 @@ public enum DataType: SQLConvertible {
     case integer
     case smallint
     case double
+    case float
     case uuid
     case data
     case json
+    case point
 
     public var sql: String {
         switch self {
@@ -33,6 +36,8 @@ public enum DataType: SQLConvertible {
             return "timestamp"
         case .timestampWithTimeZone:
             return "timestamp with time zone"
+        case .time:
+            return "time"
         case .string(let length):
             if let length = length {
                 return "varchar(\(length))"
@@ -52,12 +57,16 @@ public enum DataType: SQLConvertible {
             return "smallint"
         case .double:
             return "double precision"
+        case .float:
+            return "float"
         case .interval:
             return "interval"
         case .uuid:
             return "uuid"
         case .data:
             return "data"
+        case .point:
+            return "point"
         }
     }
 }

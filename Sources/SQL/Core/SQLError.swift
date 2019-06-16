@@ -5,6 +5,7 @@
 //  Created by Andrew J Wagner on 12/10/17.
 //
 
+import Foundation
 import Swiftlier
 
 public struct SQLError: Error, CustomStringConvertible {
@@ -24,5 +25,11 @@ public struct SQLError: Error, CustomStringConvertible {
 extension SQLError: ReportableErrorConvertible, ErrorGenerating {
     public var reportableError: ReportableError {
         return self.error("performing SQL", because: self.description)
+    }
+}
+
+extension SQLError: LocalizedError {
+    public var errorDescription: String? {
+        return self.description
     }
 }

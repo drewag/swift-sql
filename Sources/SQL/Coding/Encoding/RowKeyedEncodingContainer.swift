@@ -68,6 +68,9 @@ class RowKeyedEncodingContainer<Key: CodingKey, EncoderKey: CodingKey>: KeyedEnc
         else if let string = value as? String {
             self.encoder.setters[key.stringValue] = string
         }
+        else if let point = value as? Point {
+            self.encoder.setters[key.stringValue] = point
+        }
         else {
             do {
                 let encoder = JSONEncoder()
