@@ -113,7 +113,28 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
 
         guard type != Point.self else {
             let data = try self.decode(Data.self, forKey: key)
-            return Point(x: 0, y: 0) as! D
+            guard let string = String(data: data, encoding: .utf8)
+                , string.hasPrefix("(")
+                , string.hasSuffix(")")
+                else
+            {
+                throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "invalid point")
+            }
+
+            let startIndex = string.index(after: string.startIndex)
+            let endIndex = string.index(before: string.endIndex)
+            let withoutParens = string[startIndex ..< endIndex]
+
+            let components = withoutParens.components(separatedBy: ",")
+            guard components.count == 2 else {
+                throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "invalid point")
+            }
+
+            guard let x = Float(components[0]), let y = Float(components[1]) else {
+                throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "invalid point")
+            }
+
+            return Point(x: x, y: y) as! D
         }
 
         do {
