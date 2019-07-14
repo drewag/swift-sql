@@ -9,7 +9,7 @@ public protocol UpdateQuery: ChangeQuery, FilterableQuery, SettableQuery {}
 
 extension UpdateQuery {
     public var statement: String {
-        let setters = self.setters.map({ "\($0) = \($1.sql)"}).joined(separator: ", ")
+        let setters = self.setters.map({ "\"\($0)\" = \($1.sql)"}).joined(separator: ", ")
         var sql = "UPDATE \(self.tableName) SET \(setters)"
         if let predicate = predicate {
             sql += " WHERE \(predicate.sql)"

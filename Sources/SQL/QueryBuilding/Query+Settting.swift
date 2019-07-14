@@ -16,7 +16,7 @@ extension SettableQuery {
     public func setting(_ setters: [QualifiedField:ParameterConvertible?]) -> Self {
         var newSetters = self.setters
         for (key, value) in setters {
-            newSetters["\"\(key.name)\""] = value?.sqlParameter ?? .null
+            newSetters[key.name] = value?.sqlParameter ?? .null
         }
         var new = self
         new.setters = newSetters
