@@ -22,9 +22,9 @@ public struct SQLError: Error, CustomStringConvertible {
     }
 }
 
-extension SQLError: ReportableErrorConvertible, ErrorGenerating {
+extension SQLError: ReportableErrorConvertible {
     public var reportableError: ReportableError {
-        return self.error("performing SQL", because: self.description)
+        return ReportableError("performing SQL", because: self.description)
     }
 }
 
