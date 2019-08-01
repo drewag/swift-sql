@@ -8,28 +8,21 @@
 import Foundation
 import Swiftlier
 
-public struct SQLError: Error, CustomStringConvertible {
-    public let message: String
-    public let moreInformation: String?
+public struct SQLError: SwiftlierError {
+    public let title: String = "Error Performing SQL"
+    public let alertMessage: String
+    public let details: String?
+    public let isInternal: Bool = true
+    public let backtrace: [String]?
+
 
     public var description: String {
-        return self.message
+        return "Error Performing SQL: \(self.alertMessage)"
     }
 
-    public init(message: String, moreInformation: String? = nil) {
-        self.message = message
-        self.moreInformation = moreInformation
-    }
-}
-
-extension SQLError: ReportableErrorConvertible {
-    public var reportableError: ReportableError {
-        return ReportableError("performing SQL", because: self.description)
-    }
-}
-
-extension SQLError: LocalizedError {
-    public var errorDescription: String? {
-        return self.description
+    public init(message: String, moreInformation: String? = nil, backtrace: [String]? = Thread.callStackSymbols) {
+        self.alertMessage = message
+        self.details = moreInformation
+        self.backtrace = backtrace
     }
 }
