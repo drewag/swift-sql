@@ -162,4 +162,38 @@ class TimeTests: XCTestCase {
         XCTAssertThrowsError(try Time("12:59:60pm"))
         XCTAssertThrowsError(try Time("12:59:-1pm"))
     }
+
+    func testCompare() throws {
+        XCTAssertLessThan(Time(hour: 12, minute: 30, second: 30), Time(hour: 13, minute: 30, second: 30))
+        XCTAssertLessThan(Time(hour: 12, minute: 30, second: 30), Time(hour: 12, minute: 31, second: 30))
+        XCTAssertLessThan(Time(hour: 12, minute: 30, second: 30), Time(hour: 12, minute: 30, second: 31))
+    }
+
+    func testCodable() throws {
+        let data = try JSONEncoder().encode([Time(hour: 13, minute: 20, second: 30)])
+        XCTAssertEqual(String(data: data, encoding: .utf8), #"["1:20:30pm"]"#)
+        let time = try JSONDecoder().decode([Time].self, from: data)[0]
+        XCTAssertEqual(time.hour, 13)
+        XCTAssertEqual(time.minute, 20)
+        XCTAssertEqual(time.second, 30)
+    }
+
+    func testSQLValue() {
+        let time = Time(hour: 13, minute: 20, second: 30)
+        switch time.sqlValue {
+        case let .time(hour, minute, second):
+            XCTAssertEqual(hour, 13)
+            XCTAssertEqual(minute, 20)
+            XCTAssertEqual(second, 30)
+        default:
+            XCTFail()
+        }
+    }
+
+    func testMidnight() {
+        XCTAssertEqual(Time.midnight.hour, 0)
+        XCTAssertEqual(Time.midnight.minute, 0)
+        XCTAssertEqual(Time.midnight.second, 0)
+        XCTAssertEqual(Time.midnight.description, "12:00am")
+    }
 }

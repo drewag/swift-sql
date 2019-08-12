@@ -12,6 +12,8 @@ public struct Time {
     public let minute: Int
     public let second: Int
 
+    public static let midnight = Time(hour: 0, minute: 0, second: 0)
+
     public init(hour: Int, minute: Int = 0, second: Int = 0) {
         self.hour = hour
         self.minute = minute
@@ -152,5 +154,19 @@ extension Time: Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(self.description)
+    }
+}
+
+extension Time: Comparable {
+    public static func < (lhs: Time, rhs: Time) -> Bool {
+        if lhs.hour != rhs.hour {
+            return lhs.hour < rhs.hour
+        }
+
+        if lhs.minute != rhs.minute {
+            return lhs.minute < rhs.minute
+        }
+
+        return lhs.second < rhs.second
     }
 }
