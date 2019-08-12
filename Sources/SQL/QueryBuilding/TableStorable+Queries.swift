@@ -22,14 +22,18 @@ extension TableStorable {
         return QualifiedField(name: field, table: self.tableName, alias: alias)
     }
 
+    public static var allFields: [Selectable] {
+        return Fields.allCases.map({ field in
+            return self.field(field).aliased("\(self.tableName)__\(field.stringValue)")
+        })
+    }
+
     public static func select(_ selections: [Fields] = [], other: [Selectable] = [], distinctOn: QueryComponent? = nil) -> SelectQuery<Self> {
         let isSelectingAll: Bool
         var finalSelections = [QueryComponent]()
         if selections.isEmpty && other.isEmpty {
             isSelectingAll = true
-            for field in Fields.allCases {
-                finalSelections.append(self.field(field).aliased("\(self.tableName)__\(field.stringValue)"))
-            }
+            finalSelections += self.allFields
         }
         else {
             isSelectingAll = false
