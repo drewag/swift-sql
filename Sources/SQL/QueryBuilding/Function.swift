@@ -17,6 +17,7 @@ public enum Function: QueryComponent {
     case toTimestamp(date: Date)
     case toLocalTimestamp(date: Date)
     case earthDistance(QueryComponent, QueryComponent)
+    case coalesce([QueryComponent])
 
     public var sql: String {
         let name: String
@@ -48,6 +49,9 @@ public enum Function: QueryComponent {
             params = ["%@"]
         case .earthDistance(let lhs, let rhs):
             return "\(lhs.sql) <@> \(rhs.sql)"
+        case .coalesce(let components):
+            name = "coalesce"
+            params = components.map({$0.sql})
         }
         let paramString = params.joined(separator: ",")
         return "\(name)(\(paramString))"
@@ -73,6 +77,8 @@ public enum Function: QueryComponent {
             return [date.localSqlValue]
         case .earthDistance(let lhs, let rhs):
             return lhs.arguments + rhs.arguments
+        case .coalesce(let components):
+            return components.flatMap({$0.arguments})
         }
     }
 
