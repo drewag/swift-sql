@@ -45,6 +45,10 @@ public protocol ValueConvertible: ParameterConvertible {
     var sqlValue: Value {get}
 }
 
+extension Value: ValueConvertible {
+    public var sqlValue: Value { return self }
+}
+
 extension ValueConvertible {
     public var sqlParameter: Parameter {
         return .value(self.sqlValue)

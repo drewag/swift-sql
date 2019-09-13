@@ -8,7 +8,7 @@
 import Foundation
 import Swiftlier
 
-class RowSingleValueDecodingContainer<Query: RowReturningQuery>: SingleValueDecodingContainer {
+class SQLSingleValueDecodingContainer<Query: RowReturningQuery>: SingleValueDecodingContainer, SQLDecodingContainer {
     let userInfo: [CodingUserInfoKey:Any]
     let codingPath: [CodingKey]
     let row: Row<Query>
@@ -101,9 +101,17 @@ class RowSingleValueDecodingContainer<Query: RowReturningQuery>: SingleValueDeco
             return (try self.decode(String.self).data(using: .utf8) ?? Data()) as! D
         }
 
+        guard type != Point.self else {
+            let data = try self.decode(Data.self)
+            guard let point = self.point(from: data) else {
+                throw DecodingError.dataCorruptedError(in: self, debugDescription: "invalid point")
+            }
+            return point as! D
+        }
+
         do {
             let tableName = (type as? TableDecodable.Type)?.tableName ?? self.tableName
-            let decoder = RowDecoder(row: self.row, forTableNamed: tableName, codingPath: self.codingPath)
+            let decoder = SQLDecoder(row: self.row, forTableNamed: tableName, codingPath: self.codingPath)
             decoder.userInfo = self.userInfo
             return try D(from: decoder)
         }

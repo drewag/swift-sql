@@ -7,11 +7,11 @@
 
 import Foundation
 
-class RowKeyedEncodingContainer<Key: CodingKey, EncoderKey: CodingKey>: KeyedEncodingContainerProtocol  {
-    let encoder: RowEncoder<EncoderKey>
+struct SQLKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol  {
+    let encoder: SQLEncoder
     let codingPath: [CodingKey] = []
 
-    init(encoder: RowEncoder<EncoderKey>) {
+    init(encoder: SQLEncoder) {
         self.encoder = encoder
     }
 
@@ -23,104 +23,101 @@ class RowKeyedEncodingContainer<Key: CodingKey, EncoderKey: CodingKey>: KeyedEnc
         return self.encoder
     }
 
+    func set(value: EncodedSQLValue, forKey key: Key) throws {
+        switch self.encoder.value {
+        case .none:
+            self.encoder.value = .dict([key.stringValue:value])
+        case .leaf, .array:
+            throw SQLEncodingError.invalidValueCombination
+        case .dict(var existing):
+            existing[key.stringValue] = value
+            self.encoder.value = .dict(existing)
+        }
+    }
+
     func encodeNil(forKey key: Key) throws {
-        let none: ValueConvertible? = nil
-        self.encoder.setters[key.stringValue] = none
+        try self.set(value: .leaf(.null), forKey: key)
     }
 
     func encode(_ value: Int, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
+        try self.set(value: .leaf(.int(value)), forKey: key)
     }
 
     func encode(_ value: Bool, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
+        try self.set(value: .leaf(.bool(value)), forKey: key)
     }
 
     func encode(_ value: Float, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
+        try self.set(value: .leaf(.float(value)), forKey: key)
     }
 
     func encode(_ value: Double, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
+        try self.set(value: .leaf(.double(value)), forKey: key)
     }
 
     func encode(_ value: String, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
+        try self.set(value: .leaf(.string(value)), forKey: key)
+    }
+
+    func encode(_ value: Int8, forKey key: Key) throws {
+        try self.set(value: .leaf(.int8(value)), forKey: key)
+    }
+
+    func encode(_ value: Int16, forKey key: Key) throws {
+        try self.set(value: .leaf(.int16(value)), forKey: key)
+    }
+
+    func encode(_ value: Int32, forKey key: Key) throws {
+        try self.set(value: .leaf(.int32(value)), forKey: key)
+    }
+
+    func encode(_ value: Int64, forKey key: Key) throws {
+        try self.set(value: .leaf(.int64(value)), forKey: key)
+    }
+
+    func encode(_ value: UInt, forKey key: Key) throws {
+        try self.set(value: .leaf(.uint(value)), forKey: key)
+    }
+
+    func encode(_ value: UInt8, forKey key: Key) throws {
+        try self.set(value: .leaf(.uint8(value)), forKey: key)
+    }
+
+    func encode(_ value: UInt16, forKey key: Key) throws {
+        try self.set(value: .leaf(.uint16(value)), forKey: key)
+    }
+
+    func encode(_ value: UInt32, forKey key: Key) throws {
+        try self.set(value: .leaf(.uint32(value)), forKey: key)
+    }
+
+    func encode(_ value: UInt64, forKey key: Key) throws {
+        try self.set(value: .leaf(.uint64(value)), forKey: key)
     }
 
     func encode<T>(_ value: T, forKey key: Key) throws where T : Swift.Encodable {
-        guard !(Mirror(reflecting: value).displayStyle == .optional) else {
-            let encoder = RowEncoder(key: key)
-            encoder.userInfo = self.encoder.userInfo
-            try value.encode(to: encoder)
-            for (key, value) in encoder.setters {
-                self.encoder.setters[key] = value
-            }
-            return
-        }
-
         if let date = value as? Date {
             try self.encode(date.iso8601DateTime, forKey: key)
         }
         else if let data = value as? Data {
-            self.encoder.setters[key.stringValue] = data
-        }
-        else if let string = value as? String {
-            self.encoder.setters[key.stringValue] = string
+            try self.set(value: .leaf(.data(data)), forKey: key)
         }
         else if let point = value as? Point {
-            self.encoder.setters[key.stringValue] = point
+            try self.set(value: .leaf(.point(x: point.x, y: point.y)), forKey: key)
+        }
+        else if let time = value as? Time {
+            try self.set(value: .leaf(.time(hour: time.hour, minute: time.minute, second: time.second)), forKey: key)
         }
         else {
-            do {
-                let encoder = JSONEncoder()
-                encoder.userInfo = self.encoder.userInfo
-                self.encoder.setters[key.stringValue] = try encoder.encode(value)
-            }
-            catch {
-                let encoder = RowEncoder(key: key)
-                try value.encode(to: encoder)
-                for (key, value) in encoder.setters {
-                    self.encoder.setters[key] = value
-                }
+            let encoder = SQLEncoder(codingPath: self.codingPath + [key])
+            try value.encode(to: encoder)
+            switch encoder.value {
+            case .none:
+                break
+            default:
+                try self.set(value: encoder.value, forKey: key)
             }
         }
-    }
-
-    func encode(_ value: Int8, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
-    }
-
-    func encode(_ value: Int16, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
-    }
-
-    func encode(_ value: Int32, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
-    }
-
-    func encode(_ value: Int64, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
-    }
-
-    func encode(_ value: UInt, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
-    }
-
-    func encode(_ value: UInt8, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
-    }
-
-    func encode(_ value: UInt16, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
-    }
-
-    func encode(_ value: UInt32, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
-    }
-
-    func encode(_ value: UInt64, forKey key: Key) throws {
-        self.encoder.setters[key.stringValue] = value
     }
 
     func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {

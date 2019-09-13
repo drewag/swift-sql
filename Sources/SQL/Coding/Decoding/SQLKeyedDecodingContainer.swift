@@ -8,10 +8,10 @@
 import Foundation
 import Swiftlier
 
-class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: KeyedDecodingContainerProtocol {
+class SQLKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: KeyedDecodingContainerProtocol, SQLDecodingContainer {
     typealias Key = MyKey
 
-    let decoder: RowDecoder<Query>
+    let decoder: SQLDecoder<Query>
     let codingPath: [CodingKey] = []
     let row: Row<Query>
     let tableName: String?
@@ -20,7 +20,7 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
         return self.decoder.userInfo
     }
 
-    init(row: Row<Query>, decoder: RowDecoder<Query>, tableName: String?) {
+    init(row: Row<Query>, decoder: SQLDecoder<Query>, tableName: String?) {
         self.row = row
         self.decoder = decoder
         self.tableName = tableName
@@ -113,33 +113,15 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
 
         guard type != Point.self else {
             let data = try self.decode(Data.self, forKey: key)
-            guard let string = String(data: data, encoding: .utf8)
-                , string.hasPrefix("(")
-                , string.hasSuffix(")")
-                else
-            {
+            guard let point = self.point(from: data) else {
                 throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "invalid point")
             }
-
-            let startIndex = string.index(after: string.startIndex)
-            let endIndex = string.index(before: string.endIndex)
-            let withoutParens = string[startIndex ..< endIndex]
-
-            let components = withoutParens.components(separatedBy: ",")
-            guard components.count == 2 else {
-                throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "invalid point")
-            }
-
-            guard let x = Float(components[0]), let y = Float(components[1]) else {
-                throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "invalid point")
-            }
-
-            return Point(x: x, y: y) as! D
+            return point as! D
         }
 
         do {
             let tableName = (type as? TableDecodable.Type)?.tableName ?? self.tableName
-            let decoder = RowDecoder(row: self.row, forTableNamed: tableName, codingPath: self.codingPath + [key])
+            let decoder = SQLDecoder(row: self.row, forTableNamed: tableName, codingPath: self.codingPath + [key])
             decoder.userInfo = self.userInfo
             return try D(from: decoder)
         }
@@ -174,7 +156,7 @@ class RowKeyedDecodingContainer<Query: RowReturningQuery, MyKey: CodingKey>: Key
     }
 }
 
-private extension RowKeyedDecodingContainer {
+private extension SQLKeyedDecodingContainer {
     func rawKeys(for key: Key) -> [String] {
         var keys = [key.stringValue.lowercased()]
         if let tableName = self.tableName {

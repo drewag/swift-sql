@@ -24,7 +24,7 @@ extension Row {
     }
 
     public func decoder(purpose: CodingPurpose, userInfo: [CodingUserInfoKey:Any] = [:], tableName: String? = nil) -> Decoder {
-        let decoder = RowDecoder(row: self, forTableNamed: tableName)
+        let decoder = SQLDecoder(row: self, forTableNamed: tableName)
         decoder.userInfo = userInfo
         decoder.userInfo.location = .local
         decoder.userInfo.purpose = purpose

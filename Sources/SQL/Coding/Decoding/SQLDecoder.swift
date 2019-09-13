@@ -5,7 +5,7 @@
 //  Created by Andrew J Wagner on 12/6/17.
 //
 
-public class RowDecoder<Query: RowReturningQuery>: Decoder {
+public class SQLDecoder<Query: RowReturningQuery>: Decoder {
     let row: Row<Query>
     public let codingPath: [CodingKey]
     public var userInfo: [CodingUserInfoKey: Any] = [:]
@@ -18,15 +18,15 @@ public class RowDecoder<Query: RowReturningQuery>: Decoder {
     }
 
     public func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> where Key : CodingKey {
-        return KeyedDecodingContainer(RowKeyedDecodingContainer(row: self.row, decoder: self, tableName: self.tableName))
+        return KeyedDecodingContainer(SQLKeyedDecodingContainer(row: self.row, decoder: self, tableName: self.tableName))
     }
 
     public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
-        throw SQLError(message: "decoding an unkeyed container is not supported by the SQLiteDecoder")
+        throw SQLError(message: "decoding an unkeyed container is not supported by the SQLDecoder")
     }
 
     public func singleValueContainer() throws -> SingleValueDecodingContainer {
-        return RowSingleValueDecodingContainer(row: self.row, codingPath: self.codingPath, userInfo: self.userInfo, tableName: self.tableName)
+        return SQLSingleValueDecodingContainer(row: self.row, codingPath: self.codingPath, userInfo: self.userInfo, tableName: self.tableName)
     }
 }
 
