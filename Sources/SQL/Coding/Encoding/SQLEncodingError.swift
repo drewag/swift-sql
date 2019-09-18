@@ -11,7 +11,7 @@ public enum SQLEncodingError: Error, SwiftlierError {
     case invalidValueCombination
     case invalidRootValue
 
-    public var title: String { "Failed to encode for SQL" }
+    public var title: String { return "Failed to encode for SQL" }
 
     public var alertMessage: String {
         switch self {
@@ -26,9 +26,9 @@ public enum SQLEncodingError: Error, SwiftlierError {
         return nil
     }
 
-    public var isInternal: Bool { true }
+    public var isInternal: Bool { return true }
 
-    public var backtrace: [String]? { nil }
+    public var backtrace: [String]? { return nil }
 
     public var description: String {
         return "\(self.title): \(self.alertMessage)"

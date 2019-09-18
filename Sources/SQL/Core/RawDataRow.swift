@@ -12,11 +12,11 @@ public protocol DataConvertible {
 }
 
 extension Data: DataConvertible {
-    public var data: Data { self }
+    public var data: Data { return self }
 }
 
 extension String: DataConvertible {
-    public var data: Data { self.data(using: .utf8)! }
+    public var data: Data { return self.data(using: .utf8)! }
 }
 
 public class RawDataRow: Row<RawSelectQuery> {
