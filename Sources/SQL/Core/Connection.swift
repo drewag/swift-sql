@@ -16,6 +16,9 @@ public protocol Connection {
 
     @discardableResult
     func execute<Query: AnyQuery>(_ query: Query) throws -> Result<Query>
+
+    @discardableResult
+    func execute<Query: RowReturningQuery>(_ query: Query) throws -> RowsResult<Query>
 }
 
 extension Connection {

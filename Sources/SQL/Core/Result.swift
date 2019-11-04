@@ -11,8 +11,13 @@ public protocol ResultDataProvider {
     func rows<Query: RowReturningQuery>() -> RowSequence<Query>
 }
 
-public struct Result<Query: AnyQuery> {
-    fileprivate var dataProvider: ResultDataProvider
+public protocol AnyResult {
+    associatedtype Query
+    var dataProvider: ResultDataProvider {get}
+}
+
+public struct Result<Query: AnyQuery>: AnyResult {
+    public let dataProvider: ResultDataProvider
     fileprivate var query: Query
 
     public init(dataProvider: ResultDataProvider, query: Query) {
@@ -21,19 +26,25 @@ public struct Result<Query: AnyQuery> {
     }
 }
 
-extension Result where Query: RowReturningQuery {
-    public var rows: RowSequence<Query> {
-        return self.dataProvider.rows()
+public struct RowsResult<Query: RowReturningQuery>: AnyResult {
+    public let dataProvider: ResultDataProvider
+    fileprivate var query: Query
+    public let rows: RowSequence<Query>
+
+    public init(dataProvider: ResultDataProvider, query: Query) {
+        self.dataProvider = dataProvider
+        self.query = query
+        self.rows = dataProvider.rows()
     }
 }
 
-extension Result where Query: ChangeQuery {
+extension AnyResult where Query: ChangeQuery {
     public var countAffected: Int {
         return self.dataProvider.countAffected
     }
 }
 
-extension Result where Query: ScalarReturningQuery {
+extension AnyResult where Query: ScalarReturningQuery {
     public func scalarIfExists() throws -> Int? {
         guard let row: Row<Query> = self.dataProvider.rows().next() else {
             return nil
