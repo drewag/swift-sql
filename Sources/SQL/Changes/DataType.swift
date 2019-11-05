@@ -64,7 +64,7 @@ public enum DataType: SQLConvertible {
         case .uuid:
             return "uuid"
         case .data:
-            return "data"
+            return "====data_type===="
         case .point:
             return "point"
         }
