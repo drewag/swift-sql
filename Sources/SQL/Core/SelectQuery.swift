@@ -11,6 +11,7 @@ public struct SelectQuery<T: TableStorable>: RowReturningQuery, FilterableQuery,
     var selections: [QueryComponent] = []
     public var predicate: Predicate?
     var limit: Int?
+    var offset: Int?
     public var joins: [Join] = []
     public var orderBy: [QueryComponent] = []
     public var orderDirection: OrderDirection = .ascending
@@ -63,6 +64,11 @@ public struct SelectQuery<T: TableStorable>: RowReturningQuery, FilterableQuery,
         if let limit = self.limit {
             sql += " LIMIT \(limit)"
         }
+
+        if let offset = self.offset, offset != 0 {
+            sql += " OFFSET \(offset)"
+        }
+
         return sql
     }
 
