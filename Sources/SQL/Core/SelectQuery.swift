@@ -73,13 +73,16 @@ public struct SelectQuery<T: TableStorable>: RowReturningQuery, FilterableQuery,
     }
 
     public var arguments: [Value] {
-        return (distinctOn?.arguments ?? [])
-            + self.selections.flatMap({$0.arguments})
-            + self.joins.flatMap({$0.arguments})
-            + (predicate?.arguments ?? [])
-            + groupBy.flatMap({$0.arguments})
-            + (having?.arguments ?? [])
-            + orderBy.flatMap({$0.arguments})
+        let distinctOnArguments = distinctOn?.arguments ?? []
+        let selections = self.selections.flatMap({$0.arguments})
+        let joins = self.joins.flatMap({$0.arguments})
+        let predicateArguments = (predicate?.arguments ?? [])
+        let groupBy = groupBy.flatMap({$0.arguments})
+        let havingArguments = having?.arguments ?? []
+        let orderBy = orderBy.flatMap({$0.arguments})
+
+        
+        return distinctOnArguments + selections + joins + predicateArguments + groupBy + havingArguments + orderBy
     }
 
     public mutating func didJoin<T: TableStorable>(to storableType: T.Type) {
